@@ -1,0 +1,1207 @@
+<!-- © Andy Weale 2026. All rights reserved. Unauthorised copying or reproduction of this code or puzzle content is prohibited. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gazpacho">
+<meta name="theme-color" content="#0f172a">
+<title>GAZPACHO</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; -webkit-touch-callout: none; user-select: none; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+  @media screen and (orientation: landscape) and (max-width: 768px) {
+    body::after {
+      content: "Please rotate to portrait";
+      position: fixed; inset: 0;
+      background: #0f172a;
+      color: #facc15;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; letter-spacing: 2px;
+      font-family: Georgia, serif;
+      z-index: 9999;
+    }
+  }
+  body {
+    background: #0f172a;
+    color: #f1f5f9;
+    font-family: Georgia, serif;
+    display: flex;
+    justify-content: center;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  #app {
+    width: 100%;
+    max-width: 480px;
+    height: 100dvh;
+    padding: 8px 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #title {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 8px;
+    color: #facc15;
+    padding-top: 2px;
+  }
+  #clue-box {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 14px;
+    width: 100%;
+    text-align: center;
+  }
+  #clue-label {
+    font-size: 8px;
+    letter-spacing: 4px;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+  #clue-text {
+    font-size: 13px;
+    color: #e2e8f0;
+    font-style: italic;
+    line-height: 1.35;
+  }
+  #status-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  .status-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .status-label {
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: #94a3b8;
+  }
+  .hearts-row {
+    display: flex;
+    gap: 3px;
+    font-size: 16px;
+  }
+  #hs-nudge {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.4;
+  }
+  #hs-nudge strong { color: #facc15; }
+  #hs-dismiss {
+    background: none;
+    border: none;
+    color: #475569;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 4px;
+    flex-shrink: 0;
+  }
+  #streak-box {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: -4px;
+    margin-bottom: 0px;
+  }
+  #streak-box span {
+    color: #facc15;
+    font-size: 12px;
+  }
+  #round-row {
+    display: flex;
+    gap: 6px;
+  }
+  .round-pip {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    background: #334155;
+    color: #64748b;
+    border: 2px solid transparent;
+  }
+  .round-pip.active {
+    background: #facc15;
+    color: #0f172a;
+    border-color: #facc15;
+  }
+  .round-pip.done {
+    background: #4ade80;
+    color: #0f172a;
+  }
+  #history-area {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    align-items: center;
+  }
+  .history-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .history-round-label {
+    font-size: 9px;
+    color: #475569;
+    width: 16px;
+    text-align: right;
+    margin-right: 2px;
+  }
+  .tile {
+    width: 34px;
+    height: 34px;
+    border: 2px solid #475569;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    background: #1e293b;
+    color: #f1f5f9;
+  }
+  .tile.hit { background: #ef4444; border-color: #ef4444; color: #fff; }
+  #input-row {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 0px;
+  }
+  .input-tile {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+    background: #0f172a;
+    color: #facc15;
+    border-color: #334155;
+  }
+  #keyboard {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 2px;
+  }
+  #danger-hint {
+    text-align: center;
+    font-size: 11px;
+    color: #fb923c;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+  }
+  #key-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-bottom: 6px;
+  }
+  #control-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  #delete-key {
+    padding: 10px 18px;
+    background: #334155;
+    color: #f1f5f9;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  #enter-key {
+    padding: 10px 24px;
+    background: #facc15;
+    color: #0f172a;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 2px;
+    font-family: Georgia, serif;
+    touch-action: manipulation;
+  }
+  #input-row.shake { animation: shake 0.4s ease; }
+  .input-tile {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+    background: #0f172a;
+    color: #facc15;
+    border-color: #334155;
+  }
+  .input-tile.filled { border-color: #facc15; }
+  #countdown-msg {
+    background: #1e1a0a;
+    border: 1px solid #854d0e;
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 13px;
+    text-align: center;
+    max-width: 340px;
+    color: #fde68a;
+    line-height: 1.6;
+  }
+  #countdown-msg .countdown-num {
+    font-size: 22px;
+    font-weight: bold;
+    color: #facc15;
+    display: block;
+    margin-top: 4px;
+  }
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    text-align: center;
+    max-width: 320px;
+    display: none;
+  }
+  #message.error { background: #7f1d1d; display: block; }
+  #message.warn  { background: #78350f; display: block; }
+  #message.ok    { background: #14532d; display: block; }
+  #end-box {
+    border: 2px solid #4ade80;
+    border-radius: 12px;
+    padding: 20px 32px;
+    text-align: center;
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+  }
+  #end-box.lost { border-color: #ef4444; }
+  #end-box.visible { display: flex; }
+  #end-emoji { font-size: 34px; }
+  #end-title { font-size: 20px; font-weight: bold; }
+  #end-word { font-size: 30px; letter-spacing: 6px; color: #facc15; font-weight: bold; }
+  #end-sub { font-size: 13px; color: #64748b; }
+  .key {
+    width: 36px;
+    height: 44px;
+    background: #1e293b;
+    color: #f1f5f9;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: Georgia, serif;
+    touch-action: manipulation;
+  }
+  .key.green { background: #16a34a; border-color: #4ade80; }
+  .key:active { opacity: 0.7; }
+  #word-history-box {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 6px 12px;
+  }
+  #word-history-box .wh-label {
+    color: #94a3b8;
+    letter-spacing: 2px;
+    font-size: 10px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  #word-history-box .wh-words {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .wh-word {
+    display: inline-block;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #94a3b8;
+    letter-spacing: 1px;
+  }
+  #word-history-box .wh-empty {
+    font-size: 12px;
+    color: #334155;
+    font-style: italic;
+    letter-spacing: 1px;
+  }
+  /* Splash */
+  #splash {
+    position: fixed; inset: 0;
+    background: #0f172a;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+  }
+  #splash-inner {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 24px; max-width: 360px; text-align: center;
+  }
+  #splash-title {
+    font-size: 36px; font-weight: bold;
+    letter-spacing: 10px; color: #facc15;
+  }
+  #splash-rules {
+    font-size: 15px; color: #94a3b8;
+    line-height: 1.7; font-style: italic;
+  }
+  #splash-btn {
+    background: #facc15; color: #0f172a;
+    border: none; border-radius: 10px;
+    padding: 14px 32px; font-size: 14px;
+    font-weight: bold; letter-spacing: 3px;
+    font-family: Georgia, serif; cursor: pointer;
+    width: 100%;
+  }
+  /* Modal */
+  #modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center;
+    z-index: 900; padding: 24px;
+  }
+  #modal.visible { display: flex; }
+  #modal-inner {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 14px; padding: 28px 24px;
+    max-width: 360px; width: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 20px; text-align: center;
+  }
+  #modal-title {
+    font-size: 24px; font-weight: bold;
+    letter-spacing: 8px; color: #facc15;
+  }
+  #modal-rules {
+    font-size: 14px; color: #94a3b8;
+    line-height: 1.7; font-style: italic;
+  }
+  #modal-close {
+    background: #facc15; color: #0f172a;
+    border: none; border-radius: 8px;
+    padding: 12px 28px; font-size: 13px;
+    font-weight: bold; letter-spacing: 3px;
+    font-family: Georgia, serif; cursor: pointer;
+    width: 100%;
+  }
+  /* Title row with ? button */
+  #title-row {
+    width: 100%; display: flex;
+    align-items: center; justify-content: center;
+    position: relative;
+  }
+  #help-btn {
+    position: absolute; right: 0;
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 50%; width: 30px; height: 30px;
+    color: #94a3b8; font-size: 15px; font-weight: bold;
+    cursor: pointer; font-family: Georgia, serif;
+    display: flex; align-items: center; justify-content: center;
+  }
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)}
+    60%{transform:translateX(-5px)}
+    80%{transform:translateX(5px)}
+  }
+</style>
+</head>
+<body>
+<!-- First visit splash -->
+<div id="splash">
+  <div id="splash-inner">
+    <div id="splash-title">GAZPACHO</div>
+    <div id="splash-rules">Play words of 3, 4 and 5 letters — but every time you use a letter from today's 6-letter word you lose one of your 4 lives. Solve it from the clue in the final round. You only get 2 attempts each day, and no repeating words from the last 7 days!</div>
+    <button id="splash-btn" onclick="dismissSplash()">L E T ' S &nbsp; P L A Y</button>
+  </div>
+</div>
+
+<!-- Rules modal -->
+<div id="modal" onclick="hideModal()">
+  <div id="modal-inner" onclick="event.stopPropagation()">
+    <div id="modal-title">GAZPACHO</div>
+    <div id="modal-rules">Play words of 3, 4 and 5 letters — but every time you use a letter from today's 6-letter word you lose one of your 4 lives. Solve it from the clue in the final round. You only get 2 attempts each day, and no repeating words from the last 7 days!</div>
+    <button id="modal-close" onclick="hideModal()">G O T &nbsp; I T</button>
+  </div>
+</div>
+
+<div id="app">
+  <div id="hs-nudge">
+    <span>📱 Tap <strong>Share</strong> then <strong>Add to Home Screen</strong> for the full app experience</span>
+    <button id="hs-dismiss" onclick="dismissNudge()">✕</button>
+  </div>
+  <div id="title-row">
+    <div id="title">GAZPACHO</div>
+    <button id="help-btn" onclick="showModal()">?</button>
+  </div>
+  <div id="streak-box">S T R E A K &nbsp; <span id="streak-val">0</span></div>
+  <div id="clue-box">
+    <div id="clue-label">T H E &nbsp; C L U E</div>
+    <div id="clue-text"></div>
+  </div>
+  <div id="status-row">
+    <div class="status-block">
+      <div class="status-label">A T T E M P T S</div>
+      <div class="hearts-row" id="attempts-display"></div>
+    </div>
+    <div class="status-block">
+      <div class="status-label">H I T S &nbsp; L E F T</div>
+      <div class="hearts-row" id="hits-display"></div>
+    </div>
+  </div>
+  <div id="round-row"></div>
+  <div id="history-area"></div>
+  <div id="input-row"></div>
+  <div id="countdown-msg" style="display:none"></div>
+  <div id="message"></div>
+  <div id="end-box">
+    <div id="end-emoji"></div>
+    <div id="end-title"></div>
+    <div id="end-word"></div>
+    <div id="end-sub"></div>
+  </div>
+  <div id="word-history-box">
+    <div class="wh-label">3-LETTER WORDS USED (LAST 7 DAYS)</div>
+    <div class="wh-words" id="wh-words-list"><span class="wh-empty">None yet</span></div>
+  </div>
+  <div id="keyboard">
+    <div id="danger-hint"></div>
+    <div id="key-grid"></div>
+    <div id="control-row">
+      <button id="delete-key" onclick="handleDelete()">⌫</button>
+      <button id="enter-key" onclick="handleSubmit()">ENTER</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Puzzles (one per day, cycling) ─────────────────────────────────────────────
+// Puzzles loaded from external file (puzzles.js — keep in private repo)
+let PUZZLES = [];
+
+const ROUND_LENGTHS = [3, 4, 5, 6];
+const MAX_ATTEMPTS  = 2;
+const MAX_HITS      = 4;
+const LS_STREAK     = "gazpacho_streak";
+const LS_LAST_WIN   = "gazpacho_last_win";
+const LS_WORDS      = "gazpacho_words"; // JSON: [{word, date}]
+const LS_TODAY      = "gazpacho_today"; // date string of last played
+
+// ── Date helpers ───────────────────────────────────────────────────────────────
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function sevenDaysAgo() {
+  const d = new Date();
+  d.setDate(d.getDate() - 7);
+  return d.toISOString().slice(0, 10);
+}
+
+function getActivePuzzleDate() {
+  // Use UK local time (Europe/London handles GMT/BST automatically)
+  const now = new Date();
+  const ukTime = new Date(now.toLocaleString("en-GB", { timeZone: "Europe/London" }));
+  const hours = ukTime.getHours();
+  const minutes = ukTime.getMinutes();
+  // Before 18:08 UK time → use yesterday's puzzle
+  if (hours < 18 || (hours === 18 && minutes < 8)) {
+    ukTime.setDate(ukTime.getDate() - 1);
+  }
+  return ukTime.toISOString().slice(0, 10);
+}
+
+function getPuzzle() {
+  const activeDate = getActivePuzzleDate();
+  const puzzle = PUZZLES.find(p => p.date === activeDate);
+  // Fallback to first puzzle if no match
+  return puzzle || PUZZLES[0];
+}
+
+// ── LocalStorage helpers ───────────────────────────────────────────────────────
+function getWordHistory() {
+  try {
+    const raw = localStorage.getItem(LS_WORDS);
+    const all = raw ? JSON.parse(raw) : [];
+    const cutoff = sevenDaysAgo();
+    return all.filter(e => e.date >= cutoff);
+  } catch { return []; }
+}
+
+function addWordsToHistory(words) {
+  const existing = getWordHistory();
+  const today = todayStr();
+  words.forEach(w => existing.push({ word: w, date: today }));
+  try { localStorage.setItem(LS_WORDS, JSON.stringify(existing)); } catch {}
+}
+
+function getStreak() {
+  try { return parseInt(localStorage.getItem(LS_STREAK) || "0"); } catch { return 0; }
+}
+
+function setStreak(n) {
+  try { localStorage.setItem(LS_STREAK, String(n)); } catch {}
+}
+
+function getLastWin() {
+  try { return localStorage.getItem(LS_LAST_WIN) || ""; } catch { return ""; }
+}
+
+function setLastWin(d) {
+  try { localStorage.setItem(LS_LAST_WIN, d); } catch {}
+}
+
+// ── Game state ─────────────────────────────────────────────────────────────────
+let WORD = "";
+let forbidden = new Set();
+
+let attempt          = 1;
+let round            = 0;
+let history          = [];   // words played this attempt
+let hitsThisAttempt  = 0;
+let failedAttempts   = [];
+let currentInput     = "";
+let gameOver         = false;
+let messageTimer     = null;
+
+// ── Render helpers ─────────────────────────────────────────────────────────────
+function getUsedLetters() {
+  return new Set(history.flatMap(w => w.split("")));
+}
+
+function uniqueHitsIn(word) {
+  return new Set(word.split("").filter(c => forbidden.has(c))).size;
+}
+
+function foundThisAttempt() {
+  return new Set(history.flatMap(w => w.split("").filter(c => forbidden.has(c))));
+}
+
+function render() {
+  // Streak
+  document.getElementById("streak-val").textContent = getStreak();
+
+  // Attempts hearts
+  const ad = document.getElementById("attempts-display");
+  ad.innerHTML = "";
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    const s = document.createElement("span");
+    s.textContent = failedAttempts[i] !== undefined ? "💔" : "♥";
+    s.style.opacity = failedAttempts[i] !== undefined ? "0.3" : (i < attempt || gameOver ? "1" : "0.25");
+    ad.appendChild(s);
+  }
+
+  // Hits left
+  const hd = document.getElementById("hits-display");
+  hd.innerHTML = "";
+  const hitsLeft = MAX_HITS - hitsThisAttempt;
+  for (let i = 0; i < MAX_HITS; i++) {
+    const s = document.createElement("span");
+    s.textContent = "⚡";
+    s.style.fontSize = "16px";
+    s.style.opacity = i < hitsLeft ? "1" : "0.2";
+    hd.appendChild(s);
+  }
+
+  // Round pips
+  const rr = document.getElementById("round-row");
+  rr.innerHTML = "";
+  rr.style.display = gameOver ? "none" : "flex";
+  ROUND_LENGTHS.forEach((len, i) => {
+    const pip = document.createElement("div");
+    pip.className = "round-pip" + (i === round ? " active" : i < round ? " done" : "");
+    pip.textContent = len;
+    rr.appendChild(pip);
+  });
+
+  // History tiles
+  const ha = document.getElementById("history-area");
+  ha.innerHTML = "";
+  history.forEach((w, i) => {
+    const row = document.createElement("div");
+    row.className = "history-row";
+    const lbl = document.createElement("span");
+    lbl.className = "history-round-label";
+    lbl.textContent = ROUND_LENGTHS[i];
+    row.appendChild(lbl);
+    w.split("").forEach(c => {
+      const t = document.createElement("div");
+      t.className = "tile" + (forbidden.has(c) ? " hit" : "");
+      t.textContent = c;
+      row.appendChild(t);
+    });
+    ha.appendChild(row);
+  });
+
+  // Input tiles
+  const ir = document.getElementById("input-row");
+  ir.innerHTML = "";
+  ir.style.display = gameOver ? "none" : "flex";
+  const targetLen = ROUND_LENGTHS[round];
+  for (let i = 0; i < targetLen; i++) {
+    const t = document.createElement("div");
+    t.className = "tile input-tile" + (currentInput[i] ? " filled" : "");
+    t.textContent = currentInput[i] || "";
+    ir.appendChild(t);
+  }
+
+  // Keyboard
+  const kb = document.getElementById("keyboard");
+  kb.style.display = gameOver ? "none" : "block";
+  const usedLetters = getUsedLetters();
+  const found = foundThisAttempt();
+  const available = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(c => {
+    if (round === 3) return !usedLetters.has(c) || forbidden.has(c);
+    return !usedLetters.has(c);
+  });
+
+  document.getElementById("danger-hint").textContent = round === 3
+    ? "🟢 green letters belong to the word"
+    : `⚠️ ${forbidden.size} forbidden letters hidden in the alphabet`;
+
+  const kg = document.getElementById("key-grid");
+  kg.innerHTML = "";
+  available.forEach(c => {
+    const btn = document.createElement("button");
+    btn.className = "key" + (round === 3 && found.has(c) ? " green" : "");
+    btn.textContent = c;
+    btn.onclick = () => handleKey(c);
+    kg.appendChild(btn);
+  });
+
+  // Word history panel — filtered to current round's word length
+  const wh = getWordHistory();
+  const prevAttemptWords = failedAttempts.flatMap(a => a);
+  const allBanned = [...new Set([...wh.map(e => e.word.toUpperCase()), ...prevAttemptWords])];
+  const currentLen = ROUND_LENGTHS[Math.min(round, 2)]; // cap at 5-letter round for display
+  const whList = document.getElementById("wh-words-list");
+  const document_wh_label = document.querySelector("#word-history-box .wh-label");
+  if (document_wh_label) document_wh_label.textContent = `${currentLen}-LETTER WORDS USED (LAST 7 DAYS)`;
+  const filtered = allBanned.filter(w => w.length === currentLen);
+  if (filtered.length > 0) {
+    whList.innerHTML = filtered.map(w => `<span class="wh-word">${w}</span>`).join("");
+  } else {
+    whList.innerHTML = `<span class="wh-empty">None yet</span>`;
+  }
+}
+
+// ── Dictionary validation ─────────────────────────────────────────────────────
+const COMMON_WORDS = new Set([
+  // 3-letter words the API may miss
+  "ace","act","add","age","ago","aid","aim","air","ale","apt","arc","arm","art",
+  "ask","ate","awe","axe","aye","bad","bag","ban","bar","bat","bay","bed","beg",
+  "bet","bid","big","bit","bog","bow","box","boy","bud","bug","bun","bus","but",
+  "buy","cab","can","cap","car","cat","cob","cod","cog","cop","cow","cry","cub",
+  "cup","cut","dab","dam","dew","dig","dim","dip","dog","dot","dry","dub","dug",
+  "dun","duo","dye","ear","eat","egg","elf","elk","elm","end","era","eve","ewe",
+  "fad","fan","far","fat","fed","fen","few","fib","fig","fin","fit","fix","fly",
+  "fob","fog","fry","fun","fur","gab","gap","gas","gel","gem","gin","god","got",
+  "gum","gun","gut","gym","had","ham","hat","haw","hay","hem","hew","hid","him",
+  "hip","hit","hob","hog","hop","hot","hub","hug","hum","hut","ice","ilk","imp",
+  "ink","ion","ire","ivy","jab","jag","jam","jar","jaw","jay","jet","jig","job",
+  "jot","joy","jug","jut","keg","kin","kit","lag","lap","law","lax","lay","lea",
+  "led","leg","lid","lip","lit","log","lot","low","lug","mad","map","mat","maw",
+  "mid","mob","mod","mop","mud","mug","nab","nag","nap","net","nil","nip","nit",
+  "nob","nod","nun","oaf","oak","oar","odd","ode","ohm","oil","old","opt","orb",
+  "ore","owe","owl","own","pad","pan","par","pat","paw","pay","pea","peg","pen",
+  "pew","pie","pig","pin","pit","ply","pod","pop","pot","pub","pug","pun","pup",
+  "put","rag","ram","ran","rap","rat","raw","ray","red","ref","rep","rid","rig",
+  "rim","rip","rob","rod","rot","row","rub","rug","rum","rut","rye","sad","sag",
+  "sap","sat","saw","sew","sin","sip","sir","sit","ski","sky","sob","sod","son",
+  "sow","spa","spy","sub","sue","sum","sun","tab","tan","tap","tar","tax","tea",
+  "ten","thy","tin","tip","toe","ton","top","toy","try","tub","tug","two","urn",
+  "van","vat","vet","vex","via","vie","vim","vow","wad","war","wax","wed","wig",
+  "win","wit","woe","wok","won","woo","wry","yak","yam","yap","yaw","yep","yet",
+  "yew","zap","zen","zig","zip","zoo","git","owt","nowt","gal","pal","lad","lass",
+  "wee","och","aye","tis","ere","oft","nay","yea","haj","raj","taj","chi","phi",
+  "psi","rho","tau","eta","zed","fez","pox","vex","hex","lox","sox","pun","bun",
+  // 4-letter words the API may miss
+  "able","acid","aged","aide","alms","aloe","also","alto","amok","amus","ankh",
+  "ante","anti","apoc","arch","arcs","aria","arid","arty","ashy","atop","awry",
+  "axle","bale","balk","balm","bane","bang","bard","bark","bawl","bead","beak",
+  "beck","beef","beet","bein","bell","belt","berm","bile","bilk","bill","blab",
+  "blot","blow","blue","boar","bode","bold","bolt","boon","bore","born","both",
+  "braw","brig","brim","brit","buck","buff","bulk","bull","bump","bunk","burp",
+  "caff","calk","calx","cane","cant","carp","cart","cave","chad","chap","chat",
+  "chef","chew","chin","chip","chop","clam","clap","claw","clay","clip","clog",
+  "clot","club","clue","coal","coat","coil","cold","colt","comb","cone","conk",
+  "coop","cord","cork","corn","cost","cove","cowl","crab","crag","crew","crop",
+  "crow","cuff","cult","curd","cure","curl","cusp","damp","darn","dart","dash",
+  "dawn","deal","dean","deep","deft","deny","desk","dial","dice","diet","digs",
+  "dill","dine","ding","dire","dirk","disk","diva","dock","dolt","dome","done",
+  "door","dorm","dote","dove","down","drab","drag","draw","drip","drop","drug",
+  "drum","duck","duel","dumb","dump","dune","dusk","dust","each","earn","edgy",
+  "elan","emit","envy","epic","even","ever","evil","exam","exit","expo","eyry",
+  "fail","fain","fair","fall","fame","fang","farm","fast","fate","fawn","faze",
+  "fend","fern","fife","file","fill","film","find","fine","firm","fist","flag",
+  "flap","flat","flaw","flea","fled","flew","flip","flit","flog","flop","flow",
+  "flue","flux","foam","foil","folk","fond","font","food","fool","ford","fork",
+  "form","fort","foul","fowl","fray","frog","fume","fund","funk","gait","gale",
+  "gall","gang","garb","gash","gawk","gaze","geld","germ","gild","gilt","gist",
+  "glee","glob","glop","glow","glum","glut","gnaw","goad","goat","gone","gong",
+  "gory","gown","grab","gram","gray","grew","grid","grim","grip","grit","grog",
+  "grub","gulf","gull","gunk","guru","gust","hack","hail","hair","hale","half",
+  "hall","halt","hand","hang","hare","harm","harp","hart","hash","hate","haul",
+  "hawk","haze","head","heal","heap","heat","heed","heel","heir","held","helm",
+  "help","herb","herd","hewn","high","hike","hill","hilt","hind","hint","hire",
+  "hive","hold","hole","holm","hone","honk","hood","hook","hoop","hope","horn",
+  "hose","host","hour","howl","hull","hung","hunk","hunt","hypo","idle","inch",
+  "iris","iron","isle","itch","jack","jade","jail","jape","jeer","jell","jerk",
+  "jest","jibe","jilt","jinx","jive","jock","join","jolt","jowl","jump","junk",
+  "jury","just","kale","kelp","kept","kern","kick","kill","kiln","kind","king",
+  "kiss","kith","knob","knop","knot","lace","lack","lain","lake","lame","lamp",
+  "land","lane","lank","lard","lark","lash","last","late","laud","lava","lave",
+  "lawn","laze","lazy","lead","leaf","lean","leap","lend","lens","levy","lewd",
+  "lick","lien","lieu","life","lift","lime","limp","line","link","lion","list",
+  "loft","loin","lone","long","loom","loon","loot","lore","lorn","loud","lout",
+  "luge","lump","lung","lurk","lust","lute","lynx","made","maid","mail","maim",
+  "main","malt","mane","many","mare","mark","marl","mart","mast","mate","maze",
+  "mead","mean","meet","meld","melt","memo","mend","mesh","mild","milk","mill",
+  "mind","mine","mint","mirk","miry","mist","mite","mitt","moat","mock","mode",
+  "mold","molt","mown","much","myth","naff","niff","nowt","nude","null","numb",
+  "oath","oboe","odds","ogre","omen","once","onyx","ooze","oral","orbs","orca",
+  "otic","oust","oven","over","owed","oxen","pace","pack","page","pain","pair",
+  "pale","palm","pang","pant","papa","pave","pawn","peak","peal","peat","peck",
+  "peel","peer","pelt","pest","pick","pier","pike","pile","pill","pine","ping",
+  "pint","pipe","pith","pixy","plan","play","plea","plod","plop","plot","plow",
+  "ploy","plug","plum","plus","poem","poet","poke","pole","poll","polo","pomp",
+  "pond","pony","pool","poor","pork","port","pose","posh","post","pour","pout",
+  "prey","prim","prod","prop","pros","prow","pull","pulp","pump","pure","push",
+  "pyre","rack","raid","rail","rain","rake","ramp","rang","rank","rant","rasp",
+  "rave","read","real","reap","reed","reef","reek","reel","rely","rend","rent",
+  "rest","rice","rich","ride","rife","riff","rile","ring","riot","rise","risk",
+  "rite","road","roam","roar","robe","rock","rode","romp","roof","rook","room",
+  "root","rope","rose","rosy","rote","rout","ruby","rude","ruin","rule","rump",
+  "rung","rush","rust","safe","sage","sail","sake","sale","salt","same","sand",
+  "sane","sang","sank","sash","save","scam","scan","scar","seam","seat","seed",
+  "seek","seep","seer","self","sell","send","sera","serf","shed","shin","ship",
+  "shoe","shop","shot","show","shun","shut","sick","side","sift","sigh","silk",
+  "sill","silo","sing","sink","sire","size","skid","skim","skin","skip","slab",
+  "slap","slat","slay","sled","slew","slid","slim","slip","slit","slob","slop",
+  "slot","slow","slug","slum","slur","smug","snag","snap","snip","snob","snug",
+  "soak","soar","sock","soft","soil","sole","soma","some","song","soot","sore",
+  "sort","soul","sour","span","spar","spat","spec","sped","spin","spit","spot",
+  "spry","spur","stab","stag","star","stay","stem","step","stew","stir","stop",
+  "stow","stub","stun","such","sued","suit","sulk","sung","sunk","sure","surf",
+  "swam","swan","swap","swat","sway","swig","swim","swum","sync","tack","tame",
+  "tang","taut","teak","teal","tear","teem","tell","tend","tense","term","text",
+  "than","that","them","then","they","thin","this","thou","thud","thug","tick",
+  "tide","tidy","tied","tier","tile","till","tilt","time","tint","tiny","tire",
+  "toil","told","toll","tomb","tome","tong","took","toot","tore","torn","toss",
+  "tour","town","tram","trap","tray","tree","trim","trio","trip","trod","trot",
+  "true","tuft","tuna","tune","turf","tusk","tutu","type","typo","ugly","undo",
+  "unit","unto","upon","used","user","vain","vale","vane","vary","veal","veer",
+  "veil","vein","verb","very","vest","veto","vial","vice","view","vile","vine",
+  "void","volt","wade","wage","wail","wait","wake","wane","ward","ware","warn",
+  "wart","wary","wasp","wave","wavy","weak","weal","wean","wear","weed","week",
+  "well","welt","went","were","west","what","when","whim","whip","whir","whom",
+  "wick","wide","wife","wild","will","wilt","wind","wine","wing","wink","wire",
+  "wise","wish","wisp","with","woes","wolf","womb","wool","word","wore","worm",
+  "worn","wove","wrap","wren","writ","yawn","year","yell","your","yuan","zeal",
+  "zero","zest","zinc","zone",
+  // 5-letter words the API may miss
+  "abhor","abode","abrupt","abyss","acorn","acrid","adept","adorn","agile",
+  "aging","agony","aloft","alone","along","alter","amble","amend","angle","anvil",
+  "aorta","ardor","argue","arise","armor","artsy","ashen","aspen","astir","atlas",
+  "atone","attic","avoid","axiom","badly","basil","bland","blast","blaze","bleak",
+  "blend","blind","blink","bliss","bloat","bluff","blunt","blurb","brawn","braid",
+  "brave","brink","brisk","brood","brook","broth","brunt","brush","budge","bumpy",
+  "burly","burnt","cabin","camel","chafe","chalk","champ","chard","charm","chasm",
+  "chimp","chord","child","civic","claim","clang","clasp","cleat","chess","cloak",
+  "cloud","clown","clump","corny","covey","coyly","cramp","crazy","crimp","crisp",
+  "croft","crony","cupid","curly","daunt","debut","decry","delta","depth","derby",
+  "dirty","ditzy","divot","dizzy","doggy","dolts","dopey","downy","draft","drain",
+  "drape","drawl","dreck","drift","drink","droop","drown","druid","duchy","ducal",
+  "dunce","dusty","dwelt","elder","elfin","emery","emote","empty","enact","envoy",
+  "epoch","ethic","evict","exact","exile","extra","exude","exult","fable","facet",
+  "faint","fancy","farce","fatal","fetch","fiend","fifth","fifty","filth","finch",
+  "firth","fixed","fizzy","flack","flair","flaky","flank","flare","flash","flask",
+  "fleck","flesh","flick","fling","flint","flirt","flood","floor","floss","flout",
+  "flown","fluff","flung","flunk","flute","foamy","focal","foggy","folly","foray",
+  "forgo","forte","forty","found","foxed","foyer","frail","frame","frank","fraud",
+  "frisk","froze","fully","fungi","funky","gamut","gaudy","gauze","given","girly",
+  "girth","glare","glass","gleam","glean","glide","gloam","gloom","glory","gloss",
+  "glove","gnash","golly","gorge","gouge","gourd","graft","grain","grasp","graze",
+  "greed","groan","groin","grove","growl","gruel","grump","gully","guile","guild",
+  "gulch","gusto","gusty","habit","harsh","haven","hazel","heady","heard","heart",
+  "heave","heavy","hedge","hefty","helix","herbs","hitch","hobby","holly","honey",
+  "humor","husky","hyena","knock","kneel","knave","knack","light","lofty","lusty",
+  "magic","manor","maple","march","masse","maxim","mealy","mercy","merit","messy",
+  "metal","minor","mirky","mirth","moist","money","monks","moody","moose","mossy",
+  "motif","mould","moult","mourn","mousy","mucky","muggy","mulch","mummy","murky",
+  "musty","natty","nervy","nifty","night","nippy","nitty","noble","noise","norsk",
+  "notch","novel","nudge","nymph","occur","octet","offal","olive","onset","opera",
+  "optic","orbit","other","otter","ought","ounce","outdo","outer","outwit","oxide",
+  "ozone","paddy","painty","pansy","patchy","patsy","peach","pearl","penal","perch",
+  "peril","perky","petty","phase","phone","piano","pixel","pixie","pizza","place",
+  "plaid","plain","plane","plant","plate","plaza","plead","pleat","pluck","plumb",
+  "plume","plunk","poach","point","polar","poppy","pouch","poult","pound","power",
+  "prank","prawn","press","price","prick","pride","prime","print","prior","privy",
+  "prize","probe","prone","prong","proof","prose","proud","prove","prowl","prude",
+  "prune","psalm","pudgy","puffy","pulse","punch","pupil","purge","purse","pushy",
+  "quail","qualm","qualms","queen","query","quest","queue","quick","quiet","quirk",
+  "quota","quote","rabbi","rabid","rainy","rally","ramen","ramps","ranch","randy",
+  "range","rapid","ratch","ratio","ratty","reach","realm","rebel","rebus","recap",
+  "recut","reedy","refit","reign","relax","repay","repel","repot","rerun","reuse",
+  "revel","rider","ridge","rifle","right","rigid","risky","rival","rivet","roast",
+  "robin","rocky","rodeo","rouge","rough","rouse","route","rowdy","rowel","royal",
+  "rugby","ruler","rumba","rumor","rupee","rural","rusty","sadly","saint","salsa",
+  "salty","sandy","sassy","saucy","sauna","savor","savvy","scald","scale","scalp",
+  "scant","scare","scarf","scene","scone","scoop","scope","score","scorn","scout",
+  "scowl","scram","scrap","scrub","seedy","sense","serum","setup","seven","sever",
+  "shall","shame","shape","share","shark","sharp","shawl","shear","sheen","sheer",
+  "shelf","shell","shift","shire","shirt","shock","shone","shore","short","shout",
+  "shove","showy","shred","shrub","shrug","siege","sieve","sight","since","sinew",
+  "sixth","sixty","sized","skate","skied","skimp","skull","skunk","slack","slain",
+  "slant","slave","sleet","slept","slice","slide","slope","slosh","sloth","slump",
+  "slunk","smack","small","smash","smear","smell","smile","smite","smoke","snail",
+  "snake","snare","sneak","sneer","sniff","snore","snort","snout","snowy","soapy",
+  "solar","solid","solve","sorry","south","spare","spark","spasm","spawn","speak",
+  "spear","speck","speed","spell","spelt","spend","spice","spill","spine","spite",
+  "spook","spool","spoon","spout","spray","spree","sprig","squat","squid","stack",
+  "staid","stain","stale","stall","stamp","stand","stank","stare","stark","start",
+  "stash","state","stead","steak","steal","steel","steep","steer","stern","stick",
+  "stiff","still","sting","stink","stock","stomp","stony","stood","stool","store",
+  "stork","storm","story","stout","stove","strap","straw","stray","strip","strut",
+  "stuck","study","stump","stung","stunk","stunt","style","sugar","suite","sulky",
+  "sunny","super","surge","sushi","swamp","swear","sweat","sweep","sweet","swept",
+  "swift","swill","swine","swipe","swirl","swoop","sword","swore","syrup","tabby",
+  "table","taffy","tangy","tapir","taunt","tawny","tease","teddy","tempt","tense",
+  "tenth","tepid","terse","theft","theme","there","these","thick","thing","think",
+  "thorn","those","three","threw","throw","thrum","tiger","tight","tilde","timer",
+  "tipsy","tired","title","today","token","tonal","topaz","topic","torch","total",
+  "totem","touch","tough","towel","toxic","trace","track","trade","trail","train",
+  "trait","tramp","trawl","tread","treat","treed","tremble","trench","trend","trial",
+  "tribe","trick","tried","tripe","trite","troll","tromp","troop","troth","trout",
+  "trove","truce","truck","truly","trump","trunk","truss","trust","truth","tuber",
+  "tulip","tumor","tuner","tunic","twang","tweak","tweed","twice","twill","twine",
+  "twirl","twist","tying","udder","ulcer","ultra","uncut","unfit","unify","union",
+  "unite","unlit","unmet","unpin","unrip","unset","until","unzip","upper","upset",
+  "urban","usher","utter","vague","valid","valor","value","valve","vapor","vault",
+  "vaunt","venal","vigor","viola","viper","viral","visor","vista","vital","vivid",
+  "vixen","vocal","vodka","voila","vouch","vowel","wacky","waltz","warty","watch",
+  "water","weary","weave","wedge","weedy","weigh","weird","whack","whale","wharf",
+  "wheat","wheel","where","which","while","whine","whinny","white","whole","whose",
+  "widen","windy","witty","woman","women","woody","woozy","wordy","world","wormy",
+  "worst","worth","wound","wrath","wreak","wreck","wring","wrist","wrong","wrote",
+  "yacht","yearn","yield","young","yours","youth","zappy","zingy","zippy","zonal"
+]);
+
+async function isValidWord(word) {
+  const lower = word.toLowerCase();
+  // Whitelist check first
+  if (COMMON_WORDS.has(lower)) return true;
+  // API check
+  try {
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${lower}`);
+    if (res.ok) return true;
+    if (res.status === 404) return false;
+    // Any other error (rate limit, server issue) — allow through
+    return true;
+  } catch {
+    // Network failure — allow through with a silent pass
+    return true;
+  }
+}
+function flashMessage(msg, type, ms = 2000) {
+  const el = document.getElementById("message");
+  el.textContent = msg;
+  el.className = type;
+  if (messageTimer) clearTimeout(messageTimer);
+  messageTimer = setTimeout(() => {
+    el.className = "";
+    el.textContent = "";
+  }, ms);
+}
+
+function clearMessage() {
+  const el = document.getElementById("message");
+  if (messageTimer) clearTimeout(messageTimer);
+  el.className = "";
+  el.textContent = "";
+}
+
+function shakeInput() {
+  const ir = document.getElementById("input-row");
+  ir.classList.add("shake");
+  setTimeout(() => ir.classList.remove("shake"), 500);
+}
+
+// ── Game actions ───────────────────────────────────────────────────────────────
+function handleKey(c) {
+  if (gameOver) return;
+  if (currentInput.length < ROUND_LENGTHS[round]) {
+    currentInput += c;
+    render();
+  }
+}
+
+function handleDelete() {
+  if (gameOver) return;
+  currentInput = currentInput.slice(0, -1);
+  render();
+}
+
+async function handleSubmit() {
+  if (gameOver) return;
+  const word = currentInput.toUpperCase().trim();
+  const targetLen = ROUND_LENGTHS[round];
+
+  if (word.length !== targetLen) {
+    flashMessage(`Need exactly ${targetLen} letters`, "error");
+    shakeInput();
+    return;
+  }
+
+  // Check for already-used letters
+  const usedLetters = getUsedLetters();
+  for (const c of word) {
+    if (usedLetters.has(c) && !(round === 3 && forbidden.has(c))) {
+      flashMessage(`${c} already used this attempt`, "error");
+      shakeInput();
+      return;
+    }
+  }
+
+  // Check 7-day word ban + words used in previous attempts this game
+  const wordHistory = getWordHistory();
+  const recentWords = new Set(wordHistory.map(e => e.word.toUpperCase()));
+  const previousAttemptWords = new Set(failedAttempts.flatMap(a => a));
+  if (round < 3 && (recentWords.has(word) || previousAttemptWords.has(word))) {
+    flashMessage(`${word} already used — try something new`, "error");
+    shakeInput();
+    return;
+  }
+
+  // Dictionary check (rounds 1-3 only, not the final guess)
+  if (round < 3) {
+    flashMessage("Checking…", "ok", 3000);
+    const valid = await isValidWord(word);
+    clearMessage();
+    if (!valid) {
+      flashMessage(`${word} — not a valid word`, "error");
+      shakeInput();
+      return;
+    }
+  }
+
+  // Final round
+  if (round === 3) {
+    if (word !== WORD) {
+      const nextAttempt = attempt + 1;
+      failedAttempts.push([...history]);
+      render(); // show tiles before countdown
+      if (nextAttempt > MAX_ATTEMPTS) {
+        gameOver = true;
+        updateStreak(false);
+        setTimeout(() => showEnd(false), 3200);
+        startCountdown();
+        return;
+      }
+      startCountdown(() => resetAttempt(nextAttempt));
+      return;
+    }
+    // WIN
+    addWordsToHistory(history);
+    updateStreak(true);
+    gameOver = true;
+    showEnd(true);
+    return;
+  }
+
+  // Rounds 1-3
+  const hits = uniqueHitsIn(word);
+  const newHitsTotal = hitsThisAttempt + hits;
+  history.push(word);
+  currentInput = "";
+
+  if (newHitsTotal >= MAX_HITS) {
+    hitsThisAttempt = newHitsTotal;
+    const nextAttempt = attempt + 1;
+    failedAttempts.push([...history]);
+    render(); // show the hitting word with red tiles first
+    if (nextAttempt > MAX_ATTEMPTS) {
+      gameOver = true;
+      updateStreak(false);
+      setTimeout(() => showEnd(false), 3200);
+      startCountdown();
+      return;
+    }
+    startCountdown(() => resetAttempt(nextAttempt));
+    return;
+  }
+
+  hitsThisAttempt = newHitsTotal;
+  if (hits > 0) {
+    flashMessage(`⚡ ${hits} forbidden ${hits === 1 ? "letter" : "letters"} — ${MAX_HITS - newHitsTotal} hits left`, "warn", 2000);
+  } else {
+    flashMessage("Clean!", "ok", 1200);
+  }
+  round++;
+  render();
+}
+
+function startCountdown(callback) {
+  const el = document.getElementById("countdown-msg");
+  el.style.display = "block";
+  let secs = 3;
+  function tick() {
+    el.innerHTML = `💥 Attempt lost — remember the forbidden letters you hit!<span class="countdown-num">${secs}</span>`;
+    if (secs === 0) {
+      el.style.display = "none";
+      if (callback) callback();
+    } else {
+      secs--;
+      setTimeout(tick, 1000);
+    }
+  }
+  tick();
+}
+
+function resetAttempt(nextAttempt) {
+  attempt = nextAttempt;
+  round = 0;
+  history = [];
+  hitsThisAttempt = 0;
+  currentInput = "";
+  render();
+}
+
+// ── Streak logic ───────────────────────────────────────────────────────────────
+function updateStreak(won) {
+  const today = todayStr();
+  const lastWin = getLastWin();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yStr = yesterday.toISOString().slice(0, 10);
+
+  if (won) {
+    if (lastWin === today) {
+      // already won today, no change
+    } else if (lastWin === yStr) {
+      setStreak(getStreak() + 1);
+    } else {
+      setStreak(1);
+    }
+    setLastWin(today);
+  } else {
+    setStreak(0);
+  }
+}
+
+// ── End screen ─────────────────────────────────────────────────────────────────
+function showEnd(won) {
+  const eb = document.getElementById("end-box");
+  eb.className = "visible" + (won ? "" : " lost");
+  document.getElementById("end-emoji").textContent = won ? "🎉" : "💀";
+  document.getElementById("end-title").textContent = won ? "Solved!" : "All attempts gone";
+  document.getElementById("end-word").textContent = WORD;
+  document.getElementById("end-sub").textContent = won
+    ? `Streak: ${getStreak()} 🔥`
+    : `The word was ${WORD}`;
+  render();
+}
+
+// ── Keyboard input ─────────────────────────────────────────────────────────────
+document.addEventListener("keydown", e => {
+  if (gameOver) return;
+  if (e.key === "Enter") { handleSubmit(); return; }
+  if (e.key === "Backspace") { handleDelete(); return; }
+  const c = e.key.toUpperCase();
+  if (/^[A-Z]$/.test(c)) handleKey(c);
+});
+
+// ── Home screen nudge ─────────────────────────────────────────────────────────
+function dismissNudge() {
+  document.getElementById("hs-nudge").style.display = "none";
+  try { localStorage.setItem("gazpacho_hs_dismissed", "1"); } catch {}
+}
+
+function initNudge() {
+  const nudge = document.getElementById("hs-nudge");
+  const isStandalone = window.navigator.standalone === true;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const dismissed = localStorage.getItem("gazpacho_hs_dismissed");
+  if (isStandalone || !isIOS || dismissed) {
+    nudge.style.display = "none";
+  }
+}
+
+// ── Splash & Modal ────────────────────────────────────────────────────────────
+function dismissSplash() {
+  document.getElementById("splash").style.display = "none";
+  try { localStorage.setItem("gazpacho_seen", "1"); } catch {}
+}
+
+function showModal() {
+  document.getElementById("modal").classList.add("visible");
+}
+
+function hideModal() {
+  document.getElementById("modal").classList.remove("visible");
+}
+
+function initSplash() {
+  const seen = localStorage.getItem("gazpacho_seen");
+  if (seen) document.getElementById("splash").style.display = "none";
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+fetch("puzzles.js")
+  .then(r => r.json())
+  .then(data => {
+    PUZZLES = data;
+    const p = getPuzzle();
+    WORD = p.word.toUpperCase();
+    forbidden = new Set(WORD.split(""));
+    document.getElementById("clue-text").textContent = `"${p.clue}"`;
+    render();
+    initNudge();
+    initSplash();
+  })
+  .catch(() => {
+    document.getElementById("clue-text").textContent = "Could not load today's puzzle. Please refresh.";
+  });
+
+</script>
+</body>
+</html>
+
