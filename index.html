@@ -365,6 +365,26 @@
     font-style: italic;
     letter-spacing: 1px;
   }
+  /* Already played */
+  #already-played {
+    display: none;
+    position: fixed; inset: 0;
+    background: #0f172a;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    padding: 24px;
+    z-index: 500;
+  }
+  #already-played.visible { display: flex; }
+  #ap-title { font-size: 32px; font-weight: bold; letter-spacing: 10px; color: #facc15; }
+  #ap-word { font-size: 32px; letter-spacing: 8px; color: #facc15; font-weight: bold; }
+  #ap-streak { font-size: 14px; color: #64748b; }
+  #ap-label { font-size: 11px; letter-spacing: 4px; color: #475569; margin-top: 8px; }
+  #ap-time { font-size: 18px; letter-spacing: 6px; color: #94a3b8; }
+  #ap-countdown { font-size: 56px; font-weight: bold; color: #facc15; letter-spacing: 4px; font-variant-numeric: tabular-nums; margin-top: 4px; }
   /* Splash */
   #splash {
     position: fixed; inset: 0;
@@ -499,7 +519,7 @@
     <div id="end-title"></div>
     <div id="end-word"></div>
     <div id="end-sub"></div>
-    <div id="next-puzzle-countdown" style="font-size:12px;color:#475569;letter-spacing:1px;margin-top:4px;"></div>
+    <div id="next-puzzle-countdown" style="font-size:22px;font-weight:bold;color:#facc15;letter-spacing:3px;margin-top:10px;font-family:Georgia,serif;"></div>
   </div>
   <div id="word-history-box">
     <div class="wh-label">3-LETTER WORDS USED (LAST 7 DAYS)</div>
@@ -513,6 +533,17 @@
       <button id="enter-key" onclick="handleSubmit()">ENTER</button>
     </div>
   </div>
+</div>
+
+<!-- Already played today -->
+<div id="already-played">
+  <div id="ap-title">GAZPACHO</div>
+  <div id="ap-word"></div>
+  <div id="ap-streak"></div>
+  <div style="width:60px;height:1px;background:#334155;margin:8px 0;"></div>
+  <div id="ap-label">N E X T &nbsp; P U Z Z L E</div>
+  <div id="ap-time">1 8 : 0 8</div>
+  <div id="ap-countdown"></div>
 </div>
 
 <script>
@@ -1146,6 +1177,12 @@ function showEnd(won) {
   document.getElementById("end-sub").textContent = won
     ? `Streak: ${getStreak()} 🔥`
     : `The word was ${WORD}`;
+  // Save completion
+  try {
+    localStorage.setItem("gazpacho_done_date", getActivePuzzleDate());
+    localStorage.setItem("gazpacho_done_won", won ? "1" : "0");
+    localStorage.setItem("gazpacho_done_word", WORD);
+  } catch {}
   // Hide word history, show countdown
   document.getElementById("word-history-box").style.display = "none";
   startNextPuzzleCountdown();
@@ -1157,39 +1194,47 @@ function getNextPuzzleMs() {
   const now = new Date();
   const fmt = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Europe/London',
-    year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
   });
   const parts = Object.fromEntries(fmt.formatToParts(now).map(p => [p.type, p.value]));
-  const hours = parseInt(parts.hour);
-  const minutes = parseInt(parts.minute);
-  // Next 18:08 UK — today if before 18:08, else tomorrow
-  const todayAt1808 = new Date(`${parts.year}-${parts.month}-${parts.day}T18:08:00`);
-  // Adjust for timezone offset
-  const offsetMs = now - new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
-  const next1808 = new Date(todayAt1808.getTime() + offsetMs);
-  if (hours > 18 || (hours === 18 && minutes >= 8)) {
-    next1808.setDate(next1808.getDate() + 1);
-  }
-  return next1808 - now;
+  const h = parseInt(parts.hour), m = parseInt(parts.minute), s = parseInt(parts.second);
+  let secsUntil = (18 * 3600 + 8 * 60) - (h * 3600 + m * 60 + s);
+  if (secsUntil <= 0) secsUntil += 86400;
+  return secsUntil * 1000;
+}
+
+function countdownText(ms) {
+  if (ms <= 0) return "Refresh!";
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
 let countdownInterval = null;
 function startNextPuzzleCountdown() {
   const el = document.getElementById("next-puzzle-countdown");
   if (!el) return;
-  function tick() {
-    const ms = getNextPuzzleMs();
-    if (ms <= 0) { el.textContent = "New puzzle available — refresh!"; return; }
-    const h = Math.floor(ms / 3600000);
-    const m = Math.floor((ms % 3600000) / 60000);
-    const s = Math.floor((ms % 60000) / 1000);
-    const pad = n => String(n).padStart(2, '0');
-    el.textContent = `Next puzzle in ${pad(h)}:${pad(m)}:${pad(s)}`;
-  }
+  function tick() { el.textContent = countdownText(getNextPuzzleMs()); }
   tick();
   if (countdownInterval) clearInterval(countdownInterval);
   countdownInterval = setInterval(tick, 1000);
+}
+
+function showAlreadyPlayed() {
+  document.getElementById("app").style.display = "none";
+  document.getElementById("already-played").classList.add("visible");
+  const savedWord = localStorage.getItem("gazpacho_done_word") || "";
+  const savedWon = localStorage.getItem("gazpacho_done_won") === "1";
+  document.getElementById("ap-word").textContent = savedWord;
+  document.getElementById("ap-streak").textContent = savedWon
+    ? `Streak: ${getStreak()} 🔥`
+    : savedWord ? `The word was ${savedWord}` : "";
+  const el = document.getElementById("ap-countdown");
+  function tick() { el.textContent = countdownText(getNextPuzzleMs()); }
+  tick();
+  setInterval(tick, 1000);
 }
 
 // ── Keyboard input ─────────────────────────────────────────────────────────────
@@ -1244,10 +1289,16 @@ fetch("https://raw.githubusercontent.com/AXS-ENR-code/Gazpacho/main/puzzles.js")
     const p = getPuzzle();
     WORD = p.word.toUpperCase();
     forbidden = new Set(WORD.split(""));
-    document.getElementById("clue-text").textContent = `"${p.clue}"`;
-    render();
     initNudge();
     initSplash();
+    // If already played today, show countdown screen
+    const doneDate = localStorage.getItem("gazpacho_done_date");
+    if (doneDate === getActivePuzzleDate()) {
+      showAlreadyPlayed();
+      return;
+    }
+    document.getElementById("clue-text").textContent = `"${p.clue}"`;
+    render();
   })
   .catch(() => {
     document.getElementById("clue-text").textContent = "Could not load today's puzzle. Please refresh.";
