@@ -1,0 +1,21 @@
+[
+  { "word": "JANGLE", "clue": "What keys do in a pocket, and what nerves do after a Monday meeting (6)", "date": "2026-05-30" },
+  { "word": "MUSTER", "clue": "What soldiers do on parade, and what you can barely do on a Monday morning (6)", "date": "2026-05-31" },
+  { "word": "WALNUT", "clue": "A wrinkled brain in a hard shell (6)", "date": "2026-06-01" },
+  { "word": "DONKEY", "clue": "Works hard, complains loudly, gets no credit (6)", "date": "2026-06-02" },
+  { "word": "PLANKS", "clue": "Pirates loved them. Gym bros also love them. For entirely different reasons (6)", "date": "2026-06-03" },
+  { "word": "BUNKER", "clue": "Where golfers go to suffer, and where leaders go to hide (6)", "date": "2026-06-04" },
+  { "word": "WISDOM", "clue": "What age supposedly brings, and teeth definitely don't (6)", "date": "2026-06-05" },
+  { "word": "FROSTY", "clue": "The snowman, the reception, and the morning your car won't start (6)", "date": "2026-06-06" },
+  { "word": "FERRET", "clue": "Searches relentlessly through everything — also an animal that smells while doing it (6)", "date": "2026-06-07" },
+  { "word": "SIMMER", "clue": "What the soup does, and what you do when you're too polite to boil over (6)", "date": "2026-06-08" },
+  { "word": "GROTTO", "clue": "A cave with pretensions (6)", "date": "2026-06-09" },
+  { "word": "SQUINT", "clue": "What you do at small print, and at people you don't quite trust (6)", "date": "2026-06-10" },
+  { "word": "NETHER", "clue": "Below, beneath, and somewhere you'd rather not be (6)", "date": "2026-06-11" },
+  { "word": "JESTER", "clue": "The only person in the room allowed to tell the king he's wrong (6)", "date": "2026-06-12" },
+  { "word": "URCHIN", "clue": "Found in rock pools and Victorian streets — equally difficult to handle (6)", "date": "2026-06-13" },
+  { "word": "GRAVEL", "clue": "Sounds like it describes a rough voice, and also what's under your tyres (6)", "date": "2026-06-14" },
+  { "word": "PLANET", "clue": "Blueprint and an alien make a world (6)", "date": "2026-06-15" },
+  { "word": "LOCKET", "clue": "Curl of hair kept in a small prison (6)", "date": "2026-06-16" },
+  { "word": "CANTER", "clue": "Not quite a gallop — hidden inside 'significant error' (6)", "date": "2026-06-17" }
+]
