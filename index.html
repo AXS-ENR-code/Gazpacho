@@ -537,16 +537,22 @@ function sevenDaysAgo() {
 }
 
 function getActivePuzzleDate() {
-  // Use UK local time (Europe/London handles GMT/BST automatically)
   const now = new Date();
-  const ukTime = new Date(now.toLocaleString("en-GB", { timeZone: "Europe/London" }));
-  const hours = ukTime.getHours();
-  const minutes = ukTime.getMinutes();
-  // Before 18:08 UK time → use yesterday's puzzle
+  const fmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(now).map(p => [p.type, p.value]));
+  const hours = parseInt(parts.hour);
+  const minutes = parseInt(parts.minute);
+  let dateStr = `${parts.year}-${parts.month}-${parts.day}`;
   if (hours < 18 || (hours === 18 && minutes < 8)) {
-    ukTime.setDate(ukTime.getDate() - 1);
+    const d = new Date(dateStr + 'T12:00:00Z');
+    d.setDate(d.getDate() - 1);
+    dateStr = d.toISOString().slice(0, 10);
   }
-  return ukTime.toISOString().slice(0, 10);
+  return dateStr;
 }
 
 function getPuzzle() {
