@@ -385,6 +385,8 @@
   #ap-label { font-size: 11px; letter-spacing: 4px; color: #475569; margin-top: 8px; }
   #ap-time { font-size: 18px; letter-spacing: 6px; color: #94a3b8; }
   #ap-countdown { font-size: 56px; font-weight: bold; color: #facc15; letter-spacing: 4px; font-variant-numeric: tabular-nums; margin-top: 4px; }
+  #ap-refresh { background: none; border: 1px solid #334155; border-radius: 8px; color: #475569; font-family: Georgia, serif; font-size: 11px; letter-spacing: 3px; padding: 10px 24px; cursor: pointer; margin-top: 16px; }
+  #ap-refresh:active { border-color: #facc15; color: #facc15; }
   /* Splash */
   #splash {
     position: fixed; inset: 0;
@@ -544,6 +546,7 @@
   <div id="ap-label">N E X T &nbsp; P U Z Z L E</div>
   <div id="ap-time">1 8 : 0 8</div>
   <div id="ap-countdown"></div>
+  <button id="ap-refresh" onclick="window.location.reload()">R E F R E S H</button>
 </div>
 
 <script>
@@ -1204,7 +1207,7 @@ function getNextPuzzleMs() {
 }
 
 function countdownText(ms) {
-  if (ms <= 0) return "Refresh!";
+  if (ms <= 0) { window.location.reload(); return ""; }
   const h = Math.floor(ms / 3600000);
   const m = Math.floor((ms % 3600000) / 60000);
   const s = Math.floor((ms % 60000) / 1000);
@@ -1292,8 +1295,17 @@ fetch("https://raw.githubusercontent.com/AXS-ENR-code/Gazpacho/main/puzzles.js")
     initNudge();
     initSplash();
     // If already played today, show countdown screen
+    const activeDate = getActivePuzzleDate();
     const doneDate = localStorage.getItem("gazpacho_done_date");
-    if (doneDate === getActivePuzzleDate()) {
+    const lastWin = getLastWin();
+    if (doneDate === activeDate || lastWin === todayStr()) {
+      // Backfill done_date if missing (player completed before lock was added)
+      if (doneDate !== activeDate) {
+        try {
+          localStorage.setItem("gazpacho_done_date", activeDate);
+          localStorage.setItem("gazpacho_done_won", "1");
+        } catch {}
+      }
       showAlreadyPlayed();
       return;
     }
