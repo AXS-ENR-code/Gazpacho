@@ -1463,13 +1463,18 @@ function initSplash() {
 // ── Share ──────────────────────────────────────────────────────────────────────
 function generateShareText() {
   try {
-    const attempts = JSON.parse(localStorage.getItem("gazpacho_share") || "null");
-    if (!attempts || !attempts.length) return null;
-    const won = attempts[attempts.length - 1].won;
     const date = new Date(getActivePuzzleDate() + "T12:00:00Z");
     const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    const attempts = JSON.parse(localStorage.getItem("gazpacho_share") || "null");
+    const won = localStorage.getItem("gazpacho_done_won") === "1";
+    const s = getStreak();
     let t = `GAZPACHO\n${dateStr}\n\n`;
-    if (!won) {
+
+    if (!attempts || !attempts.length) {
+      // Fallback: no tile data (played before share feature added)
+      t += won ? "Solved!" : "✕ ✕";
+      if (won && s > 0) t += `  🔥 ${s}`;
+    } else if (!won) {
       t += "✕ ✕";
     } else {
       attempts.forEach((att, i) => {
@@ -1481,7 +1486,6 @@ function generateShareText() {
         if (i < attempts.length - 1) t += "\n";
       });
       t += "\n" + (attempts.length === 1 ? "Solved first attempt!" : "Solved second attempt");
-      const s = getStreak();
       if (s > 0) t += `  🔥 ${s}`;
     }
     t += "\nhttps://axs-enr-code.github.io/Gazpacho/";
@@ -1496,7 +1500,7 @@ async function shareResult(btn) {
   const feedback = m => { btn.textContent = m; setTimeout(() => { btn.textContent = orig; }, 2000); };
   try {
     if (navigator.share) {
-      await navigator.share({ text, title: "GAZPACHO", url: "https://axs-enr-code.github.io/Gazpacho/" });
+      await navigator.share({ text });
     } else {
       await navigator.clipboard.writeText(text);
       feedback("C O P I E D !");
