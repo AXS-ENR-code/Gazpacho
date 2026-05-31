@@ -288,6 +288,7 @@
     display: block;
     margin-top: 4px;
   }
+  #message {
     border-radius: 8px;
     padding: 8px 16px;
     font-size: 13px;
@@ -373,19 +374,48 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 12px;
     text-align: center;
     padding: 24px;
     z-index: 500;
   }
   #already-played.visible { display: flex; }
-  #ap-title { font-size: 32px; font-weight: bold; letter-spacing: 10px; color: #facc15; }
-  #ap-word { font-size: 32px; letter-spacing: 8px; color: #facc15; font-weight: bold; }
-  #ap-streak { font-size: 14px; color: #64748b; }
-  #ap-label { font-size: 11px; letter-spacing: 4px; color: #475569; margin-top: 8px; }
-  #ap-time { font-size: 18px; letter-spacing: 6px; color: #94a3b8; }
-  #ap-countdown { font-size: 56px; font-weight: bold; color: #facc15; letter-spacing: 4px; font-variant-numeric: tabular-nums; margin-top: 4px; }
-  #ap-refresh { background: none; border: 1px solid #334155; border-radius: 8px; color: #475569; font-family: Georgia, serif; font-size: 11px; letter-spacing: 3px; padding: 10px 24px; cursor: pointer; margin-top: 16px; }
+  #ap-title { font-size: 44px; font-weight: bold; letter-spacing: 10px; color: #facc15; }
+  #ap-bowl-wrapper {
+    position: relative;
+    width: 170px;
+    height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0;
+  }
+  #ap-bowl-icon {
+    width: 150px;
+    height: 150px;
+    display: block;
+    animation: bowl-rock 2.8s ease-in-out infinite;
+  }
+  #ice-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+  @keyframes bowl-rock {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+  }
+  @keyframes ice-fall {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    75%  { opacity: 0.9; }
+    100% { transform: translateY(155px) rotate(55deg); opacity: 0; }
+  }
+  #ap-streak { font-size: 15px; color: #e2e8f0; }
+  #ap-label { font-size: 11px; letter-spacing: 4px; color: #94a3b8; margin-top: 20px; }
+  #ap-time { font-size: 18px; letter-spacing: 6px; color: #cbd5e1; }
+  #ap-countdown { font-size: 56px; font-weight: bold; color: #facc15; letter-spacing: 4px; font-variant-numeric: tabular-nums; margin-top: 12px; }
+  #ap-refresh { background: none; border: 1px solid #64748b; border-radius: 8px; color: #cbd5e1; font-family: Georgia, serif; font-size: 11px; letter-spacing: 3px; padding: 12px 28px; cursor: pointer; margin-top: 20px; }
   #ap-refresh:active { border-color: #facc15; color: #facc15; }
   /* Splash */
   #splash {
@@ -460,6 +490,7 @@
     cursor: pointer; font-family: Georgia, serif;
     display: flex; align-items: center; justify-content: center;
   }
+  @keyframes shake {
     0%,100%{transform:translateX(0)}
     20%{transform:translateX(-8px)}
     40%{transform:translateX(8px)}
@@ -541,9 +572,12 @@
 <!-- Already played today -->
 <div id="already-played">
   <div id="ap-title">GAZPACHO</div>
-  <div id="ap-word"></div>
+  <div id="ap-bowl-wrapper">
+    <div id="ice-container"></div>
+    <img src="icon-512.png" id="ap-bowl-icon" alt="">
+  </div>
   <div id="ap-streak"></div>
-  <div style="width:60px;height:1px;background:#334155;margin:8px 0;"></div>
+  <div style="width:60px;height:1px;background:#334155;margin:4px 0;"></div>
   <div id="ap-label">N E X T &nbsp; P U Z Z L E</div>
   <div id="ap-time">1 8 : 0 8</div>
   <div id="ap-countdown"></div>
@@ -1229,16 +1263,41 @@ function startNextPuzzleCountdown() {
 function showAlreadyPlayed() {
   document.getElementById("app").style.display = "none";
   document.getElementById("already-played").classList.add("visible");
-  const savedWord = localStorage.getItem("gazpacho_done_word") || "";
   const savedWon = localStorage.getItem("gazpacho_done_won") === "1";
-  document.getElementById("ap-word").textContent = savedWord;
   document.getElementById("ap-streak").textContent = savedWon
     ? `Streak: ${getStreak()} 🔥`
-    : savedWord ? `The word was ${savedWord}` : "";
+    : "Better luck next time";
   const el = document.getElementById("ap-countdown");
   function tick() { el.textContent = countdownText(getNextPuzzleMs()); }
   tick();
   setInterval(tick, 1000);
+  startIceCubes();
+}
+
+function startIceCubes() {
+  const container = document.getElementById("ice-container");
+  if (!container) return;
+  function spawnCube() {
+    const cube = document.createElement("div");
+    const size = 10 + Math.random() * 9;
+    const xOff = -45 + Math.random() * 90;
+    cube.style.cssText = [
+      "position:absolute",
+      `width:${size}px`,
+      `height:${size}px`,
+      "background:rgba(186,230,253,0.92)",
+      "border-radius:3px",
+      `left:calc(50% + ${xOff}px - ${size/2}px)`,
+      "top:16px",
+      "box-shadow:inset -2px -2px 4px rgba(100,160,220,0.5),inset 1px 1px 3px rgba(255,255,255,0.7)",
+      "animation:ice-fall 1.1s ease-in forwards",
+      "pointer-events:none"
+    ].join(";");
+    container.appendChild(cube);
+    setTimeout(() => cube.remove(), 1200);
+  }
+  spawnCube();
+  setInterval(spawnCube, 1700);
 }
 
 // ── Keyboard input ─────────────────────────────────────────────────────────────
