@@ -104,30 +104,6 @@
     gap: 3px;
     font-size: 16px;
   }
-  #hs-nudge {
-    width: 100%;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: 11px;
-    color: #94a3b8;
-    line-height: 1.4;
-  }
-  #hs-nudge strong { color: #facc15; }
-  #hs-dismiss {
-    background: none;
-    border: none;
-    color: #475569;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 2px 4px;
-    flex-shrink: 0;
-  }
   #streak-box {
     font-size: 9px;
     letter-spacing: 3px;
@@ -536,10 +512,6 @@
 </div>
 
 <div id="app">
-  <div id="hs-nudge">
-    <span>📱 Tap <strong>Share</strong> then <strong>Add to Home Screen</strong> for the full app experience</span>
-    <button id="hs-dismiss" onclick="dismissNudge()">✕</button>
-  </div>
   <div id="title-row">
     <button id="refresh-btn" onclick="window.location.reload()" style="position:absolute;left:0;background:#1e293b;border:1px solid #334155;border-radius:50%;width:30px;height:30px;color:#94a3b8;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">↺</button>
     <div id="title">GAZPACHO</div>
@@ -1463,21 +1435,6 @@ document.addEventListener("keydown", e => {
   if (/^[A-Z]$/.test(c)) handleKey(c);
 });
 
-// ── Home screen nudge ─────────────────────────────────────────────────────────
-function dismissNudge() {
-  document.getElementById("hs-nudge").style.display = "none";
-  try { localStorage.setItem("gazpacho_hs_dismissed", "1"); } catch {}
-}
-
-function initNudge() {
-  const nudge = document.getElementById("hs-nudge");
-  const isStandalone = window.navigator.standalone === true;
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const dismissed = localStorage.getItem("gazpacho_hs_dismissed");
-  if (isStandalone || !isIOS || dismissed) {
-    nudge.style.display = "none";
-  }
-}
 
 // ── Splash & Modal ────────────────────────────────────────────────────────────
 function dismissSplash() {
@@ -1506,7 +1463,6 @@ fetch("https://raw.githubusercontent.com/AXS-ENR-code/Gazpacho/main/puzzles.js")
     const p = getPuzzle();
     WORD = p.word.toUpperCase();
     forbidden = new Set(WORD.split(""));
-    initNudge();
     initSplash();
     // If already played today, show countdown screen
     const activeDate = getActivePuzzleDate();
