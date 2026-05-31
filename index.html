@@ -396,12 +396,15 @@
     height: 190px;
     display: block;
     animation: bowl-rock 2.8s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
   }
   #ice-container {
     position: absolute;
     inset: 0;
     pointer-events: none;
     overflow: visible;
+    z-index: 1;
   }
   @keyframes bowl-rock {
     0%, 100% { transform: rotate(-4deg); }
@@ -409,9 +412,9 @@
   }
   @keyframes ice-fall {
     0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
-    65%  { opacity: 1; }
-    85%  { opacity: 0.4; }
-    100% { transform: translateY(140px) rotate(45deg); opacity: 0; }
+    60%  { opacity: 1; }
+    80%  { opacity: 0.5; }
+    100% { transform: translateY(155px) rotate(45deg); opacity: 0; }
   }
   #ap-streak { font-size: 18px; color: #e2e8f0; }
   #ap-label { font-size: 11px; letter-spacing: 4px; color: #94a3b8; margin-top: 20px; }
@@ -575,8 +578,43 @@
 <div id="already-played">
   <div id="ap-title">GAZPACHO</div>
   <div id="ap-bowl-wrapper">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" id="ap-bowl-icon">
+      <!-- Steam / crouton dots -->
+      <rect x="67" y="40" width="10" height="10" fill="#facc15" rx="2"/>
+      <rect x="94" y="28" width="10" height="10" fill="#facc15" rx="2"/>
+      <rect x="121" y="40" width="10" height="10" fill="#facc15" rx="2"/>
+      <!-- Bowl rim -->
+      <rect x="34" y="67" width="132" height="14" rx="3" fill="#263448"/>
+      <!-- Bowl body -->
+      <path d="M38,81 L162,81 L140,166 L60,166 Z" fill="#1e2d45"/>
+      <!-- Soup surface (layered ellipses) -->
+      <ellipse cx="100" cy="74" rx="62" ry="15" fill="#92400e"/>
+      <ellipse cx="100" cy="74" rx="46" ry="11" fill="#b45309"/>
+      <ellipse cx="100" cy="74" rx="30" ry="7" fill="#d97706"/>
+      <ellipse cx="100" cy="74" rx="14" ry="4" fill="#fbbf24"/>
+      <!-- Pixel G: .#### / #.... / #.### / #...# / .#### (7px blocks, 9px pitch) -->
+      <!-- Row 0: cols 1-4 -->
+      <rect x="89" y="101" width="7" height="7" fill="#facc15"/>
+      <rect x="98" y="101" width="7" height="7" fill="#facc15"/>
+      <rect x="107" y="101" width="7" height="7" fill="#facc15"/>
+      <rect x="116" y="101" width="7" height="7" fill="#facc15"/>
+      <!-- Row 1: col 0 -->
+      <rect x="80" y="110" width="7" height="7" fill="#facc15"/>
+      <!-- Row 2: cols 0, 2, 3, 4 -->
+      <rect x="80" y="119" width="7" height="7" fill="#facc15"/>
+      <rect x="98" y="119" width="7" height="7" fill="#facc15"/>
+      <rect x="107" y="119" width="7" height="7" fill="#facc15"/>
+      <rect x="116" y="119" width="7" height="7" fill="#facc15"/>
+      <!-- Row 3: cols 0, 4 -->
+      <rect x="80" y="128" width="7" height="7" fill="#facc15"/>
+      <rect x="116" y="128" width="7" height="7" fill="#facc15"/>
+      <!-- Row 4: cols 1-4 -->
+      <rect x="89" y="137" width="7" height="7" fill="#facc15"/>
+      <rect x="98" y="137" width="7" height="7" fill="#facc15"/>
+      <rect x="107" y="137" width="7" height="7" fill="#facc15"/>
+      <rect x="116" y="137" width="7" height="7" fill="#facc15"/>
+    </svg>
     <div id="ice-container"></div>
-    <img src="icon-512.png" id="ap-bowl-icon" alt="">
   </div>
   <div id="ap-streak"></div>
   <div style="width:60px;height:1px;background:#334155;margin:4px 0;"></div>
@@ -1279,26 +1317,57 @@ function showAlreadyPlayed() {
 function startIceCubes() {
   const container = document.getElementById("ice-container");
   if (!container) return;
+  const ns = "http://www.w3.org/2000/svg";
+
   function spawnCube() {
-    const cube = document.createElement("div");
-    const size = 16 + Math.random() * 12;
-    const xOff = -50 + Math.random() * 100;
-    const dur = 2.0 + Math.random() * 0.6;
-    cube.style.cssText = [
+    const s   = 11 + Math.random() * 7;   // face size 11–18 px
+    const W   = s * 2, H = s * 2;
+    const xOff = -55 + Math.random() * 110;
+    const dur  = 2.0 + Math.random() * 0.7;
+
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.style.cssText = [
+      `width:${W}px`, `height:${H}px`,
       "position:absolute",
-      `width:${size}px`,
-      `height:${size}px`,
-      "background:rgba(220,242,255,0.95)",
-      "border-radius:4px",
-      `left:calc(50% + ${xOff}px - ${size/2}px)`,
-      "top:-65px",
-      "box-shadow:inset -3px -3px 5px rgba(100,160,220,0.6),inset 2px 2px 4px rgba(255,255,255,0.9),0 0 6px rgba(186,230,253,0.5)",
+      `left:calc(50% + ${xOff}px - ${W / 2}px)`,
+      "top:-70px",
       `animation:ice-fall ${dur}s ease-in forwards`,
-      "pointer-events:none"
+      "transform-origin:center",
+      "transform-box:fill-box",
+      "pointer-events:none",
+      "overflow:visible"
     ].join(";");
-    container.appendChild(cube);
-    setTimeout(() => cube.remove(), (dur + 0.2) * 1000);
+
+    // Isometric cube — six vertices
+    const hh = s / 2;
+    const A = [s,       0       ]; // top apex
+    const B = [0,       hh      ]; // left
+    const C = [W,       hh      ]; // right
+    const D = [s,       s       ]; // centre
+    const E = [0,       s + hh  ]; // bottom-left
+    const F = [W,       s + hh  ]; // bottom-right
+    const G = [s,       H       ]; // bottom apex
+
+    function face(pts, fill, stroke) {
+      const el = document.createElementNS(ns, "polygon");
+      el.setAttribute("points", pts.map(p => p.join(",")).join(" "));
+      el.setAttribute("fill", fill);
+      if (stroke) { el.setAttribute("stroke", stroke); el.setAttribute("stroke-width", "0.7"); }
+      return el;
+    }
+
+    // Top face — near-white icy highlight (catching light from above)
+    svg.appendChild(face([A, B, D, C], "rgba(210,240,255,0.97)", "rgba(255,255,255,0.85)"));
+    // Left face — mid blue
+    svg.appendChild(face([B, E, G, D], "rgba(96,165,250,0.91)",  "rgba(147,210,255,0.6)"));
+    // Right face — deep blue (shadow side)
+    svg.appendChild(face([C, D, G, F], "rgba(37,99,235,0.93)",   "rgba(100,170,255,0.5)"));
+
+    container.appendChild(svg);
+    setTimeout(() => svg.remove(), (dur + 0.2) * 1000);
   }
+
   spawnCube();
   setInterval(spawnCube, 2000);
 }
