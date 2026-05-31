@@ -1,6 +1,6 @@
 [
   { "word": "JANGLE", "clue": "What keys do in a pocket, and what nerves do after a Monday meeting (6)", "date": "2026-05-30" },
-  { "word": "MUSTER", "clue": "What soldiers do on parade, and what you can barely do on a Monday morning (6)", "date": "2026-05-31" },
+  { "word": "MUSTER", "clue": "Soldiers assemble; courage is gathered (6)", "date": "2026-05-31" },
   { "word": "WALNUT", "clue": "A wrinkled brain in a hard shell (6)", "date": "2026-06-01" },
   { "word": "DONKEY", "clue": "Works hard, complains loudly, gets no credit (6)", "date": "2026-06-02" },
   { "word": "PLANKS", "clue": "Pirates loved them. Gym bros also love them. For entirely different reasons (6)", "date": "2026-06-03" },
