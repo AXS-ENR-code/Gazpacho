@@ -513,8 +513,7 @@
 
 <div id="app">
   <div id="title-row">
-    <button id="refresh-btn" onclick="window.location.reload()" style="position:absolute;left:0;background:#1e293b;border:1px solid #334155;border-radius:50%;width:30px;height:30px;color:#94a3b8;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">↺</button>
-    <div id="title">GAZPACHO</div>
+<div id="title">GAZPACHO</div>
     <button id="help-btn" onclick="showModal()">?</button>
   </div>
   <div id="streak-box">S T R E A K &nbsp; <span id="streak-val">0</span> 🔥</div>
@@ -543,7 +542,8 @@
     <div id="end-word"></div>
     <div id="end-sub"></div>
     <div id="next-puzzle-countdown" style="font-size:22px;font-weight:bold;color:#facc15;letter-spacing:3px;margin-top:10px;font-family:Georgia,serif;"></div>
-    <button onclick="window.location.reload()" style="margin-top:16px;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 24px;cursor:pointer;">R E F R E S H</button>
+    <button onclick="shareResult(this)" style="margin-top:14px;background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;width:100%;">S H A R E</button>
+    <button onclick="window.location.reload()" style="margin-top:8px;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 24px;cursor:pointer;">R E F R E S H</button>
   </div>
   <div id="word-history-box">
     <div class="wh-label">3-LETTER WORDS USED (LAST 7 DAYS)</div>
@@ -607,6 +607,7 @@
   <div id="ap-label">N E X T &nbsp; P U Z Z L E</div>
   <div id="ap-time">1 8 : 0 8</div>
   <div id="ap-countdown"></div>
+  <button onclick="shareResult(this)" style="background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;">S H A R E</button>
   <button id="ap-refresh" onclick="window.location.reload()">R E F R E S H</button>
 </div>
 
@@ -1256,6 +1257,10 @@ function showEnd(won) {
     localStorage.setItem("gazpacho_done_date", getActivePuzzleDate());
     localStorage.setItem("gazpacho_done_won", won ? "1" : "0");
     localStorage.setItem("gazpacho_done_word", WORD);
+    // Save share grid data
+    const shareAttempts = failedAttempts.map(words => ({ words, won: false }));
+    if (won) shareAttempts.push({ words: [...history], won: true });
+    localStorage.setItem("gazpacho_share", JSON.stringify(shareAttempts));
   } catch {}
   // Hide word history, show countdown
   document.getElementById("word-history-box").style.display = "none";
@@ -1455,8 +1460,57 @@ function initSplash() {
   if (seen) document.getElementById("splash").style.display = "none";
 }
 
+// ── Share ──────────────────────────────────────────────────────────────────────
+function generateShareText() {
+  try {
+    const attempts = JSON.parse(localStorage.getItem("gazpacho_share") || "null");
+    if (!attempts || !attempts.length) return null;
+    const won = attempts[attempts.length - 1].won;
+    const date = new Date(getActivePuzzleDate() + "T12:00:00Z");
+    const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    let t = `GAZPACHO\n${dateStr}\n\n`;
+    if (!won) {
+      t += "✕ ✕";
+    } else {
+      attempts.forEach((att, i) => {
+        if (attempts.length > 1) t += i === 0 ? "Attempt 1\n" : "Attempt 2\n";
+        att.words.forEach(w => {
+          t += w.split("").map(c => forbidden.has(c) ? "🟥" : "⬛").join("") + "\n";
+        });
+        t += (att.won ? "🟩🟩🟩🟩🟩🟩" : "✕") + "\n";
+        if (i < attempts.length - 1) t += "\n";
+      });
+      t += "\n" + (attempts.length === 1 ? "Solved first attempt!" : "Solved second attempt");
+      const s = getStreak();
+      if (s > 0) t += `  🔥 ${s}`;
+    }
+    t += "\nhttps://axs-enr-code.github.io/Gazpacho/";
+    return t;
+  } catch { return null; }
+}
+
+async function shareResult(btn) {
+  const text = generateShareText();
+  if (!text) return;
+  const orig = btn.textContent;
+  const feedback = m => { btn.textContent = m; setTimeout(() => { btn.textContent = orig; }, 2000); };
+  try {
+    if (navigator.share) {
+      await navigator.share({ text, title: "GAZPACHO", url: "https://axs-enr-code.github.io/Gazpacho/" });
+    } else {
+      await navigator.clipboard.writeText(text);
+      feedback("C O P I E D !");
+    }
+  } catch (e) {
+    if (e.name !== "AbortError") {
+      try { await navigator.clipboard.writeText(text); feedback("C O P I E D !"); }
+      catch { feedback("T R Y  A G A I N"); }
+    }
+  }
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────────
-fetch("https://raw.githubusercontent.com/AXS-ENR-code/Gazpacho/main/puzzles.js")
+fetch("https://cdn.jsdelivr.net/gh/AXS-ENR-code/Gazpacho@main/puzzles.js")
   .then(r => r.json())
   .then(data => {
     PUZZLES = data;
