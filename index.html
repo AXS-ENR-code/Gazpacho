@@ -519,6 +519,7 @@
   <div id="splash-inner">
     <div id="splash-title">GAZPACHO</div>
     <div id="splash-rules">Play words of 3, 4 and 5 letters — but every time you use a letter from today's 6-letter word you lose one of your 4 lives. Solve it from the clue in the final round. You only get 2 attempts each day, and no repeating words from the last 7 days!</div>
+    <div style="font-size:13px; color:#facc15; font-style:normal; letter-spacing:1px; font-family:Georgia,serif;">Play every day to keep the streak alive!</div>
     <button id="splash-btn" onclick="dismissSplash()">L E T ' S &nbsp; P L A Y</button>
   </div>
 </div>
@@ -702,7 +703,17 @@ function addWordsToHistory(words) {
 }
 
 function getStreak() {
-  try { return parseInt(localStorage.getItem(LS_STREAK) || "0"); } catch { return 0; }
+  try {
+    const lastWin = getLastWin();
+    if (lastWin) {
+      const today = todayStr();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yStr = yesterday.toISOString().slice(0, 10);
+      if (lastWin !== today && lastWin !== yStr) return 0;
+    }
+    return parseInt(localStorage.getItem(LS_STREAK) || "0");
+  } catch { return 0; }
 }
 
 function setStreak(n) {
