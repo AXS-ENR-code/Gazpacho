@@ -46,7 +46,7 @@
     width: 100%;
     max-width: 480px;
     height: 100dvh;
-    padding: 8px 12px 8px;
+    padding: 8px 12px 200px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -214,9 +214,18 @@
     border-color: #334155;
   }
   #keyboard {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
-    max-width: 420px;
-    margin-top: 2px;
+    max-width: 480px;
+    padding: 10px 14px calc(env(safe-area-inset-bottom, 0px) + 8px);
+    background: rgba(18, 28, 48, 0.98);
+    border-top: 1px solid #2d4060;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -6px 28px rgba(0, 0, 0, 0.55);
+    z-index: 100;
   }
   #danger-hint {
     text-align: center;
@@ -564,13 +573,14 @@
     <div class="wh-label">3-LETTER WORDS USED (LAST 7 DAYS)</div>
     <div class="wh-words" id="wh-words-list"><span class="wh-empty">None yet</span></div>
   </div>
-  <div id="keyboard">
-    <div id="danger-hint"></div>
-    <div id="key-grid"></div>
-    <div id="control-row">
-      <button id="delete-key" onclick="handleDelete()">⌫</button>
-      <button id="enter-key" onclick="handleSubmit()">ENTER</button>
-    </div>
+</div>
+
+<div id="keyboard">
+  <div id="danger-hint"></div>
+  <div id="key-grid"></div>
+  <div id="control-row">
+    <button id="delete-key" onclick="handleDelete()">⌫</button>
+    <button id="enter-key" onclick="handleSubmit()">ENTER</button>
   </div>
 </div>
 
@@ -813,7 +823,7 @@ function render() {
 
   document.getElementById("danger-hint").textContent = round === 3
     ? "🟢 green letters belong to the word"
-    : `⚠️ ${forbidden.size} forbidden letters hidden in the alphabet`;
+    : `⚠️ ${forbidden.size} letters forbidden until the final round`;
 
   const kg = document.getElementById("key-grid");
   kg.innerHTML = "";
