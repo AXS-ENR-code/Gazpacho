@@ -1319,9 +1319,74 @@ function startIceCubes() {
   if (!container) return;
   const ns = "http://www.w3.org/2000/svg";
 
+  // Soup surface is ~80px from top of the ice-container (210px wrapper)
+  const SURFACE_Y = 80;
+
+  function spawnSplash(centerX) {
+    const W = 110, H = 82;
+    const ox = W / 2;
+    const oy = H * 0.74;   // soup-surface line within the splash SVG
+
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.style.cssText = [
+      `width:${W}px`, `height:${H}px`,
+      "position:absolute",
+      `left:${(centerX - W / 2).toFixed(1)}px`,
+      `top:${(SURFACE_Y - oy).toFixed(1)}px`,
+      "pointer-events:none", "overflow:visible"
+    ].join(";");
+
+    // Expanding ripple ring on the soup surface
+    const ring = document.createElementNS(ns, "ellipse");
+    ring.setAttribute("cx", String(ox));
+    ring.setAttribute("cy", String(oy));
+    ring.setAttribute("rx", "7");
+    ring.setAttribute("ry", "3");
+    ring.setAttribute("fill", "none");
+    ring.setAttribute("stroke", "#f59e0b");
+    ring.setAttribute("stroke-width", "1.5");
+    ring.style.transformBox  = "fill-box";
+    ring.style.transformOrigin = "center";
+    svg.appendChild(ring);
+    ring.animate([
+      { transform: "scale(1)", opacity: 0.9 },
+      { transform: "scale(5)", opacity: 0   }
+    ], { duration: 520, easing: "ease-out", fill: "forwards" });
+
+    // Droplets — arcing up then falling back
+    const palette  = ["#f59e0b", "#d97706", "#fbbf24", "#b45309", "#fde68a"];
+    const nDrops   = 4 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < nDrops; i++) {
+      const angle = -75 + (150 / (nDrops - 1)) * i + (Math.random() * 16 - 8);
+      const rad   = angle * Math.PI / 180;
+      const dist  = 18 + Math.random() * 22;
+      const dx    =  Math.sin(rad) * dist;
+      const dy    = -Math.cos(rad) * dist;   // negative = upward in SVG
+
+      const r    = 2 + Math.random() * 2;
+      const drop = document.createElementNS(ns, "circle");
+      drop.setAttribute("cx", String(ox));
+      drop.setAttribute("cy", String(oy));
+      drop.setAttribute("r",  r.toFixed(1));
+      drop.setAttribute("fill", palette[i % palette.length]);
+      svg.appendChild(drop);
+
+      const ddur = 400 + Math.random() * 200;
+      drop.animate([
+        { transform: "translate(0px,0px)",                                                        opacity: 1           },
+        { transform: `translate(${(dx*0.5).toFixed(1)}px,${dy.toFixed(1)}px)`,                   opacity: 1, offset: 0.38 },
+        { transform: `translate(${dx.toFixed(1)}px,${(dy*0.25).toFixed(1)}px)`,                  opacity: 0           }
+      ], { duration: ddur, easing: "ease-in-out", fill: "forwards" });
+    }
+
+    container.appendChild(svg);
+    setTimeout(() => svg.remove(), 950);
+  }
+
   function spawnCube() {
-    const s   = 11 + Math.random() * 7;   // face size 11–18 px
-    const W   = s * 2, H = s * 2;
+    const s    = 11 + Math.random() * 7;
+    const W    = s * 2, H = s * 2;
     const xOff = -55 + Math.random() * 110;
     const dur  = 2.0 + Math.random() * 0.7;
 
@@ -1333,21 +1398,14 @@ function startIceCubes() {
       `left:calc(50% + ${xOff}px - ${W / 2}px)`,
       "top:-70px",
       `animation:ice-fall ${dur}s ease-in forwards`,
-      "transform-origin:center",
-      "transform-box:fill-box",
-      "pointer-events:none",
-      "overflow:visible"
+      "transform-origin:center", "transform-box:fill-box",
+      "pointer-events:none", "overflow:visible"
     ].join(";");
 
-    // Isometric cube — six vertices
     const hh = s / 2;
-    const A = [s,       0       ]; // top apex
-    const B = [0,       hh      ]; // left
-    const C = [W,       hh      ]; // right
-    const D = [s,       s       ]; // centre
-    const E = [0,       s + hh  ]; // bottom-left
-    const F = [W,       s + hh  ]; // bottom-right
-    const G = [s,       H       ]; // bottom apex
+    const A = [s, 0      ], B = [0, hh     ], C = [W, hh     ],
+          D = [s, s      ], E = [0, s + hh ], F = [W, s + hh ],
+          G = [s, H      ];
 
     function face(pts, fill, stroke) {
       const el = document.createElementNS(ns, "polygon");
@@ -1357,15 +1415,15 @@ function startIceCubes() {
       return el;
     }
 
-    // Top face — near-white icy highlight (catching light from above)
-    svg.appendChild(face([A, B, D, C], "rgba(210,240,255,0.97)", "rgba(255,255,255,0.85)"));
-    // Left face — mid blue
-    svg.appendChild(face([B, E, G, D], "rgba(96,165,250,0.91)",  "rgba(147,210,255,0.6)"));
-    // Right face — deep blue (shadow side)
-    svg.appendChild(face([C, D, G, F], "rgba(37,99,235,0.93)",   "rgba(100,170,255,0.5)"));
+    svg.appendChild(face([A,B,D,C], "rgba(210,240,255,0.97)", "rgba(255,255,255,0.85)"));
+    svg.appendChild(face([B,E,G,D], "rgba(96,165,250,0.91)",  "rgba(147,210,255,0.6)"));
+    svg.appendChild(face([C,D,G,F], "rgba(37,99,235,0.93)",   "rgba(100,170,255,0.5)"));
 
     container.appendChild(svg);
     setTimeout(() => svg.remove(), (dur + 0.2) * 1000);
+
+    // Fire splash exactly when cube reaches the soup surface
+    setTimeout(() => spawnSplash(105 + xOff), dur * 0.78 * 1000);
   }
 
   spawnCube();
