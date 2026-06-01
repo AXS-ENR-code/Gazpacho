@@ -1562,6 +1562,8 @@ function generateShareText() {
     if (won) {
       t += "\n" + (attempts.length === 1 ? "Solved first attempt!" : "Solved second attempt");
       if (s > 0) t += `  🔥 ${s}`;
+    } else {
+      t += "\nFailed!";
     }
     return t;
   } catch { return null; }
