@@ -350,10 +350,11 @@
     background: #0f172a;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
+    justify-content: flex-start;
+    gap: 6px;
     text-align: center;
-    padding: 24px;
+    padding: calc(env(safe-area-inset-top, 0px) + 14px) 24px calc(env(safe-area-inset-bottom, 0px) + 12px);
+    overflow-y: auto;
     z-index: 500;
   }
   #already-played.visible { display: flex; }
@@ -596,12 +597,12 @@
     <div id="ice-container"></div>
   </div>
   <div id="ap-streak"></div>
-  <div id="ap-grid" style="margin:6px 0;display:flex;flex-direction:column;gap:5px;align-items:center;"></div>
+  <div id="ap-grid" style="margin:4px 0;display:flex;flex-direction:column;gap:4px;align-items:center;"></div>
+  <button onclick="shareResult(this)" style="background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:10px 24px;font-size:12px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;">S H A R E &nbsp; R E S U L T</button>
   <div style="width:60px;height:1px;background:#334155;margin:4px 0;"></div>
   <div id="ap-label">N E X T &nbsp; P U Z Z L E</div>
   <div id="ap-time">1 8 : 0 8</div>
   <div id="ap-countdown"></div>
-  <button onclick="shareResult(this)" style="background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;">S H A R E &nbsp; R E S U L T</button>
   <button id="ap-refresh" onclick="window.location.reload()">R E F R E S H</button>
   <button onclick="shareGame(this)" style="background:none;border:1px solid #38bdf8;border-radius:8px;color:#38bdf8;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 24px;cursor:pointer;margin-top:6px;">S H A R E &nbsp; T H E &nbsp; G A M E</button>
 </div>
@@ -833,6 +834,9 @@ function render() {
   });
 
   // Word history panel — filtered to current round's word length
+  // Hide word history in the final round
+  document.getElementById("word-history-box").style.display = round === 3 ? "none" : "";
+
   const wh = getWordHistory();
   const prevAttemptWords = failedAttempts.flatMap(a => a);
   const allBanned = [...new Set([...wh.map(e => e.word.toUpperCase()), ...prevAttemptWords])];
@@ -1480,36 +1484,43 @@ function buildShareGrid() {
     const attempts = JSON.parse(localStorage.getItem("gazpacho_share") || "null");
     if (!attempts || !attempts.length) return "";
 
+    const S = 14; // tile size px
+    const G = 2;  // gap px
+
     const sq = (color, border) =>
-      `<div style="width:20px;height:20px;background:${color};border:1px solid ${border};border-radius:3px;flex-shrink:0;"></div>`;
-    const row = cells =>
-      `<div style="display:flex;gap:3px;">${cells}</div>`;
-    const label = txt =>
-      `<div style="font-size:8px;letter-spacing:2px;color:#475569;text-align:center;margin-top:4px;">${txt}</div>`;
-    const divider =
-      `<div style="width:50px;height:1px;background:#334155;margin:2px 0;"></div>`;
+      `<div style="width:${S}px;height:${S}px;background:${color};border:1px solid ${border};border-radius:2px;flex-shrink:0;"></div>`;
+    const tileRow = cells =>
+      `<div style="display:flex;gap:${G}px;">${cells}</div>`;
 
-    let html = "";
-    attempts.forEach((att, i) => {
-      if (attempts.length > 1) html += label(`ATTEMPT ${i + 1}`);
-
+    const renderAttempt = att => {
+      let h = `<div style="display:flex;flex-direction:column;gap:${G}px;align-items:center;">`;
       att.words.forEach(w => {
-        html += row(w.split("").map(c =>
-          forbidden.has(c) ? sq("#ef4444", "#ef4444") : sq("#1e293b", "#334155")
+        h += tileRow(w.split("").map(c =>
+          forbidden.has(c) ? sq("#ef4444","#ef4444") : sq("#1e293b","#334155")
         ).join(""));
       });
-
       if (att.won) {
-        html += row(Array(6).fill(sq("#4ade80", "#4ade80")).join(""));
+        h += tileRow(Array(6).fill(sq("#4ade80","#4ade80")).join(""));
       } else if (att.guess4) {
-        html += row(att.guess4.split("").map((c, idx) =>
-          WORD[idx] === c ? sq("#4ade80", "#4ade80") : sq("#1e293b", "#334155")
+        h += tileRow(att.guess4.split("").map((c, i) =>
+          WORD[i] === c ? sq("#4ade80","#4ade80") : sq("#1e293b","#334155")
         ).join(""));
       }
+      h += "</div>";
+      return h;
+    };
 
-      if (i < attempts.length - 1) html += divider;
-    });
-    return html;
+    if (attempts.length === 1) {
+      return renderAttempt(attempts[0]);
+    }
+
+    // Two attempts — side by side
+    const lbl = n => `<div style="font-size:8px;letter-spacing:2px;color:#475569;margin-bottom:3px;">ATT ${n}</div>`;
+    return `<div style="display:flex;gap:14px;align-items:flex-start;">
+      <div style="display:flex;flex-direction:column;align-items:center;">${lbl(1)}${renderAttempt(attempts[0])}</div>
+      <div style="width:1px;background:#334155;align-self:stretch;"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;">${lbl(2)}${renderAttempt(attempts[1])}</div>
+    </div>`;
   } catch { return ""; }
 }
 
