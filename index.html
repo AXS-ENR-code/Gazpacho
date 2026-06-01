@@ -181,14 +181,6 @@
     justify-content: center;
     margin-top: 0px;
   }
-  .input-tile {
-    width: 38px;
-    height: 38px;
-    font-size: 16px;
-    background: #0f172a;
-    color: #facc15;
-    border-color: #334155;
-  }
   #keyboard {
     position: fixed;
     bottom: 0;
@@ -541,8 +533,9 @@
     <div id="end-title"></div>
     <div id="end-word"></div>
     <div id="end-sub"></div>
+    <div id="end-grid" style="margin:10px 0;display:flex;flex-direction:column;gap:5px;align-items:center;"></div>
     <div id="next-puzzle-countdown" style="font-size:22px;font-weight:bold;color:#facc15;letter-spacing:3px;margin-top:10px;font-family:Georgia,serif;"></div>
-    <button onclick="shareResult(this)" style="margin-top:14px;background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;width:100%;">S H A R E</button>
+    <button onclick="shareResult(this)" style="margin-top:14px;background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;width:100%;">S H A R E &nbsp; R E S U L T</button>
     <button onclick="window.location.reload()" style="margin-top:8px;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 24px;cursor:pointer;">R E F R E S H</button>
   </div>
   <div id="word-history-box">
@@ -603,11 +596,12 @@
     <div id="ice-container"></div>
   </div>
   <div id="ap-streak"></div>
+  <div id="ap-grid" style="margin:6px 0;display:flex;flex-direction:column;gap:5px;align-items:center;"></div>
   <div style="width:60px;height:1px;background:#334155;margin:4px 0;"></div>
   <div id="ap-label">N E X T &nbsp; P U Z Z L E</div>
   <div id="ap-time">1 8 : 0 8</div>
   <div id="ap-countdown"></div>
-  <button onclick="shareResult(this)" style="background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;">S H A R E</button>
+  <button onclick="shareResult(this)" style="background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;">S H A R E &nbsp; R E S U L T</button>
   <button id="ap-refresh" onclick="window.location.reload()">R E F R E S H</button>
   <button onclick="shareGame(this)" style="background:none;border:1px solid #38bdf8;border-radius:8px;color:#38bdf8;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 24px;cursor:pointer;margin-top:6px;">S H A R E &nbsp; T H E &nbsp; G A M E</button>
 </div>
@@ -627,13 +621,23 @@ const LS_TODAY      = "gazpacho_today"; // date string of last played
 
 // ── Date helpers ───────────────────────────────────────────────────────────────
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const fmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map(p => [p.type, p.value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
 function sevenDaysAgo() {
   const d = new Date();
   d.setDate(d.getDate() - 7);
-  return d.toISOString().slice(0, 10);
+  const fmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(d).map(p => [p.type, p.value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
 function getActivePuzzleDate() {
@@ -662,6 +666,12 @@ function getPuzzle() {
   return puzzle || PUZZLES[0];
 }
 
+function getPreviousPuzzleDate() {
+  const d = new Date(getActivePuzzleDate() + 'T12:00:00Z');
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
 // ── LocalStorage helpers ───────────────────────────────────────────────────────
 function getWordHistory() {
   try {
@@ -683,11 +693,9 @@ function getStreak() {
   try {
     const lastWin = getLastWin();
     if (lastWin) {
-      const today = todayStr();
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yStr = yesterday.toISOString().slice(0, 10);
-      if (lastWin !== today && lastWin !== yStr) return 0;
+      const activeDate = getActivePuzzleDate();
+      const prevDate = getPreviousPuzzleDate();
+      if (lastWin !== activeDate && lastWin !== prevDate) return 0;
     }
     return parseInt(localStorage.getItem(LS_STREAK) || "0");
   } catch { return 0; }
@@ -714,6 +722,7 @@ let round            = 0;
 let history          = [];   // words played this attempt
 let hitsThisAttempt  = 0;
 let failedAttempts   = [];
+let failedR4         = [];   // round 4 guess per failed attempt (null if never reached round 4)
 let currentInput     = "";
 let gameOver         = false;
 let messageTimer     = null;
@@ -1143,11 +1152,13 @@ async function handleSubmit() {
   if (round === 3) {
     if (word !== WORD) {
       const nextAttempt = attempt + 1;
+      failedR4.push(word);
       failedAttempts.push([...history]);
       render(); // show tiles before countdown
       if (nextAttempt > MAX_ATTEMPTS) {
         gameOver = true;
         updateStreak(false);
+        addWordsToHistory(failedAttempts.flat());
         setTimeout(() => showEnd(false), 3200);
         startCountdown();
         return;
@@ -1156,7 +1167,7 @@ async function handleSubmit() {
       return;
     }
     // WIN
-    addWordsToHistory(history);
+    addWordsToHistory([...failedAttempts.flat(), ...history]);
     updateStreak(true);
     gameOver = true;
     showEnd(true);
@@ -1172,11 +1183,13 @@ async function handleSubmit() {
   if (newHitsTotal >= MAX_HITS) {
     hitsThisAttempt = newHitsTotal;
     const nextAttempt = attempt + 1;
+    failedR4.push(null);
     failedAttempts.push([...history]);
     render(); // show the hitting word with red tiles first
     if (nextAttempt > MAX_ATTEMPTS) {
       gameOver = true;
       updateStreak(false);
+      addWordsToHistory(failedAttempts.flat());
       setTimeout(() => showEnd(false), 3200);
       startCountdown();
       return;
@@ -1223,21 +1236,19 @@ function resetAttempt(nextAttempt) {
 
 // ── Streak logic ───────────────────────────────────────────────────────────────
 function updateStreak(won) {
-  const today = todayStr();
+  const activeDate = getActivePuzzleDate();
   const lastWin = getLastWin();
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yStr = yesterday.toISOString().slice(0, 10);
+  const prevDate = getPreviousPuzzleDate();
 
   if (won) {
-    if (lastWin === today) {
-      // already won today, no change
-    } else if (lastWin === yStr) {
+    if (lastWin === activeDate) {
+      // already won today's puzzle, no change
+    } else if (lastWin === prevDate) {
       setStreak(getStreak() + 1);
     } else {
       setStreak(1);
     }
-    setLastWin(today);
+    setLastWin(activeDate);
   } else {
     setStreak(0);
   }
@@ -1259,12 +1270,13 @@ function showEnd(won) {
     localStorage.setItem("gazpacho_done_won", won ? "1" : "0");
     localStorage.setItem("gazpacho_done_word", WORD);
     // Save share grid data
-    const shareAttempts = failedAttempts.map(words => ({ words, won: false }));
-    if (won) shareAttempts.push({ words: [...history], won: true });
+    const shareAttempts = failedAttempts.map((words, i) => ({ words, guess4: failedR4[i] || null, won: false }));
+    if (won) shareAttempts.push({ words: [...history], guess4: null, won: true });
     localStorage.setItem("gazpacho_share", JSON.stringify(shareAttempts));
   } catch {}
   // Hide word history, show countdown
   document.getElementById("word-history-box").style.display = "none";
+  document.getElementById("end-grid").innerHTML = buildShareGrid();
   startNextPuzzleCountdown();
   render();
 }
@@ -1309,6 +1321,7 @@ function showAlreadyPlayed() {
   document.getElementById("ap-streak").textContent = savedWon
     ? `Streak: ${getStreak()} 🔥`
     : "Better luck next time";
+  document.getElementById("ap-grid").innerHTML = buildShareGrid();
   const el = document.getElementById("ap-countdown");
   function tick() { el.textContent = countdownText(getNextPuzzleMs()); }
   tick();
@@ -1461,6 +1474,45 @@ function initSplash() {
   if (seen) document.getElementById("splash").style.display = "none";
 }
 
+// ── Share grid renderer ────────────────────────────────────────────────────────
+function buildShareGrid() {
+  try {
+    const attempts = JSON.parse(localStorage.getItem("gazpacho_share") || "null");
+    if (!attempts || !attempts.length) return "";
+
+    const sq = (color, border) =>
+      `<div style="width:20px;height:20px;background:${color};border:1px solid ${border};border-radius:3px;flex-shrink:0;"></div>`;
+    const row = cells =>
+      `<div style="display:flex;gap:3px;">${cells}</div>`;
+    const label = txt =>
+      `<div style="font-size:8px;letter-spacing:2px;color:#475569;text-align:center;margin-top:4px;">${txt}</div>`;
+    const divider =
+      `<div style="width:50px;height:1px;background:#334155;margin:2px 0;"></div>`;
+
+    let html = "";
+    attempts.forEach((att, i) => {
+      if (attempts.length > 1) html += label(`ATTEMPT ${i + 1}`);
+
+      att.words.forEach(w => {
+        html += row(w.split("").map(c =>
+          forbidden.has(c) ? sq("#ef4444", "#ef4444") : sq("#1e293b", "#334155")
+        ).join(""));
+      });
+
+      if (att.won) {
+        html += row(Array(6).fill(sq("#4ade80", "#4ade80")).join(""));
+      } else if (att.guess4) {
+        html += row(att.guess4.split("").map((c, idx) =>
+          WORD[idx] === c ? sq("#4ade80", "#4ade80") : sq("#1e293b", "#334155")
+        ).join(""));
+      }
+
+      if (i < attempts.length - 1) html += divider;
+    });
+    return html;
+  } catch { return ""; }
+}
+
 // ── Share ──────────────────────────────────────────────────────────────────────
 function generateShareText() {
   try {
@@ -1472,21 +1524,29 @@ function generateShareText() {
     let t = `GAZPACHO\n${dateStr}\n`;
 
     if (!attempts || !attempts.length) {
-      // Fallback: no tile data (played before share feature added)
-      t += won ? "Solved!" : "✕ ✕";
+      // Fallback: played before share feature existed
+      t += won ? "Solved!" : "No luck today";
       if (won && s > 0) t += `  🔥 ${s}`;
-    } else if (!won) {
-      t += "✕ ✕";
-    } else {
-      attempts.forEach((att, i) => {
-        if (attempts.length > 1) t += i === 0 ? "Attempt 1\n" : "Attempt 2\n";
-        att.words.forEach(w => {
-          t += w.split("").map(c => forbidden.has(c) ? "🟥" : "⬛").join("") + "\n";
-        });
-        t += (att.won ? "🟩🟩🟩🟩🟩🟩" : "✕") + "\n";
-        if (i < attempts.length - 1) t += "\n";
+      return t;
+    }
+
+    attempts.forEach((att, i) => {
+      if (attempts.length > 1) t += i === 0 ? "Attempt 1\n" : "Attempt 2\n";
+      // Rounds 1–3: red if forbidden letter hit, black if clean
+      att.words.forEach(w => {
+        t += w.split("").map(c => forbidden.has(c) ? "🟥" : "⬛").join("") + "\n";
       });
-      t += (attempts.length === 1 ? "Solved first attempt!" : "Solved second attempt");
+      // Round 4: all green if won, Wordle-style position tiles if guessed wrong, omit if never reached
+      if (att.won) {
+        t += "🟩🟩🟩🟩🟩🟩\n";
+      } else if (att.guess4) {
+        t += att.guess4.split("").map((c, idx) => WORD[idx] === c ? "🟩" : "⬛").join("") + "\n";
+      }
+      if (i < attempts.length - 1) t += "\n";
+    });
+
+    if (won) {
+      t += "\n" + (attempts.length === 1 ? "Solved first attempt!" : "Solved second attempt");
       if (s > 0) t += `  🔥 ${s}`;
     }
     return t;
@@ -1545,7 +1605,7 @@ fetch("https://cdn.jsdelivr.net/gh/AXS-ENR-code/Gazpacho@main/puzzles.js")
     const activeDate = getActivePuzzleDate();
     const doneDate = localStorage.getItem("gazpacho_done_date");
     const lastWin = getLastWin();
-    if (doneDate === activeDate || lastWin === todayStr()) {
+    if (doneDate === activeDate || lastWin === activeDate) {
       // Backfill done_date if missing (player completed before lock was added)
       if (doneDate !== activeDate) {
         try {
