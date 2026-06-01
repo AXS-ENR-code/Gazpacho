@@ -1164,8 +1164,7 @@ async function handleSubmit() {
         gameOver = true;
         updateStreak(false);
         addWordsToHistory(failedAttempts.flat());
-        setTimeout(() => showEnd(false), 3200);
-        startCountdown();
+        setTimeout(() => showEnd(false), 1500);
         return;
       }
       startCountdown(() => resetAttempt(nextAttempt));
@@ -1195,8 +1194,7 @@ async function handleSubmit() {
       gameOver = true;
       updateStreak(false);
       addWordsToHistory(failedAttempts.flat());
-      setTimeout(() => showEnd(false), 3200);
-      startCountdown();
+      setTimeout(() => showEnd(false), 1500);
       return;
     }
     startCountdown(() => resetAttempt(nextAttempt));
@@ -1216,7 +1214,7 @@ async function handleSubmit() {
 function startCountdown(callback) {
   const el = document.getElementById("countdown-msg");
   el.style.display = "block";
-  let secs = 3;
+  let secs = 5;
   function tick() {
     el.innerHTML = `💥 Attempt lost — remember the forbidden letters you hit!<span class="countdown-num">${secs}</span>`;
     if (secs === 0) {
@@ -1512,8 +1510,11 @@ function buildShareGrid() {
       return h;
     };
 
+    const lastWon = attempts[attempts.length - 1].won;
+    const resultLabel = lastWon ? "" : `<div style="font-size:13px;letter-spacing:3px;color:#ef4444;margin-top:6px;font-family:Georgia,serif;">F A I L E D !</div>`;
+
     if (attempts.length === 1) {
-      return renderAttempt(attempts[0]);
+      return renderAttempt(attempts[0]) + resultLabel;
     }
 
     // Two attempts — side by side
@@ -1522,7 +1523,7 @@ function buildShareGrid() {
       <div style="display:flex;flex-direction:column;align-items:center;">${lbl(1)}${renderAttempt(attempts[0])}</div>
       <div style="width:1px;background:#334155;align-self:stretch;"></div>
       <div style="display:flex;flex-direction:column;align-items:center;">${lbl(2)}${renderAttempt(attempts[1])}</div>
-    </div>`;
+    </div>${resultLabel}`;
   } catch { return ""; }
 }
 
