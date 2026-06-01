@@ -835,8 +835,8 @@ function render() {
   });
 
   // Word history panel — filtered to current round's word length
-  // Hide word history in the final round
-  document.getElementById("word-history-box").style.display = round === 3 ? "none" : "";
+  // Hide word history in the final round or when game is over
+  document.getElementById("word-history-box").style.display = (round === 3 || gameOver) ? "none" : "";
 
   const wh = getWordHistory();
   const prevAttemptWords = failedAttempts.flatMap(a => a);
