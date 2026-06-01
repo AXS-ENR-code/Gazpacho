@@ -279,19 +279,20 @@
   #end-box {
     border: 2px solid #4ade80;
     border-radius: 12px;
-    padding: 20px 32px;
+    padding: 12px 20px;
     text-align: center;
     display: none;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     align-items: center;
+    width: 100%;
   }
   #end-box.lost { border-color: #ef4444; }
   #end-box.visible { display: flex; }
-  #end-emoji { font-size: 34px; }
-  #end-title { font-size: 20px; font-weight: bold; }
-  #end-word { font-size: 30px; letter-spacing: 6px; color: #facc15; font-weight: bold; }
-  #end-sub { font-size: 13px; color: #64748b; }
+  #end-emoji { font-size: 24px; }
+  #end-title { font-size: 16px; font-weight: bold; }
+  #end-word { font-size: 22px; letter-spacing: 6px; color: #facc15; font-weight: bold; }
+  #end-sub { font-size: 12px; color: #64748b; }
   .key {
     width: 36px;
     height: 44px;
@@ -351,27 +352,27 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    gap: 6px;
+    gap: 4px;
     text-align: center;
-    padding: calc(env(safe-area-inset-top, 0px) + 14px) 24px calc(env(safe-area-inset-bottom, 0px) + 12px);
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) 24px calc(env(safe-area-inset-bottom, 0px) + 8px);
     overflow-y: auto;
     z-index: 500;
   }
   #already-played.visible { display: flex; }
-  #ap-title { font-size: 44px; font-weight: bold; letter-spacing: 10px; color: #facc15; }
+  #ap-title { font-size: 34px; font-weight: bold; letter-spacing: 10px; color: #facc15; }
   #ap-bowl-wrapper {
     position: relative;
-    width: 210px;
-    height: 210px;
+    width: 160px;
+    height: 160px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 4px 0;
+    margin: 2px 0;
     overflow: visible;
   }
   #ap-bowl-icon {
-    width: 190px;
-    height: 190px;
+    width: 140px;
+    height: 140px;
     display: block;
     animation: bowl-rock 2.8s ease-in-out infinite;
     transform-box: fill-box;
@@ -397,7 +398,7 @@
   #ap-streak { font-size: 18px; color: #e2e8f0; }
   #ap-label { font-size: 11px; letter-spacing: 4px; color: #94a3b8; margin-top: 20px; }
   #ap-time { font-size: 18px; letter-spacing: 6px; color: #cbd5e1; }
-  #ap-countdown { font-size: 56px; font-weight: bold; color: #facc15; letter-spacing: 4px; font-variant-numeric: tabular-nums; margin-top: 12px; }
+  #ap-countdown { font-size: 38px; font-weight: bold; color: #facc15; letter-spacing: 4px; font-variant-numeric: tabular-nums; margin-top: 4px; }
   #ap-refresh { background: none; border: 1px solid #64748b; border-radius: 8px; color: #cbd5e1; font-family: Georgia, serif; font-size: 11px; letter-spacing: 3px; padding: 12px 28px; cursor: pointer; margin-top: 20px; }
   #ap-refresh:active { border-color: #facc15; color: #facc15; }
   /* Splash */
@@ -535,7 +536,7 @@
     <div id="end-word"></div>
     <div id="end-sub"></div>
     <div id="end-grid" style="margin:10px 0;display:flex;flex-direction:column;gap:5px;align-items:center;"></div>
-    <div id="next-puzzle-countdown" style="font-size:22px;font-weight:bold;color:#facc15;letter-spacing:3px;margin-top:10px;font-family:Georgia,serif;"></div>
+    <div id="next-puzzle-countdown" style="font-size:16px;font-weight:bold;color:#facc15;letter-spacing:3px;margin-top:4px;font-family:Georgia,serif;"></div>
     <button onclick="shareResult(this)" style="margin-top:14px;background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;width:100%;">S H A R E &nbsp; R E S U L T</button>
     <button onclick="window.location.reload()" style="margin-top:8px;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 24px;cursor:pointer;">R E F R E S H</button>
   </div>
@@ -1278,8 +1279,9 @@ function showEnd(won) {
     if (won) shareAttempts.push({ words: [...history], guess4: null, won: true });
     localStorage.setItem("gazpacho_share", JSON.stringify(shareAttempts));
   } catch {}
-  // Hide word history, show countdown
+  // Hide word history, remove keyboard padding, show countdown
   document.getElementById("word-history-box").style.display = "none";
+  document.getElementById("app").style.paddingBottom = "16px";
   document.getElementById("end-grid").innerHTML = buildShareGrid();
   startNextPuzzleCountdown();
   render();
