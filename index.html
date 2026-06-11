@@ -481,6 +481,102 @@
     60%{transform:translateX(-5px)}
     80%{transform:translateX(5px)}
   }
+  /* Golden Gazpacho badge */
+  .golden-badge {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #facc15;
+    border-radius: 8px;
+    background: #1e1a0a;
+    padding: 8px 14px;
+    margin-top: 6px;
+  }
+  .golden-badge.visible { display: inline-flex; }
+  .golden-badge svg { width: 30px; height: 30px; flex-shrink: 0; }
+  .golden-badge span {
+    font-size: 11px; letter-spacing: 2px; color: #facc15;
+    font-family: Georgia, serif; text-align: left; line-height: 1.5;
+  }
+  /* Archive calendar */
+  #archive-cal {
+    display: none;
+    position: fixed; inset: 0;
+    background: #0f172a;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+    overflow-y: auto;
+    z-index: 600;
+  }
+  #archive-cal.visible { display: flex; }
+  #cal-title { font-size: 24px; font-weight: bold; letter-spacing: 8px; color: #facc15; }
+  #cal-sub { font-size: 10px; letter-spacing: 4px; color: #94a3b8; }
+  #cal-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; max-width: 340px; margin-top: 8px;
+  }
+  .cal-arrow {
+    background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+    color: #facc15; font-size: 18px; width: 40px; height: 40px;
+    cursor: pointer; font-family: Georgia, serif;
+  }
+  .cal-arrow:disabled { color: #334155; cursor: default; }
+  #cal-month-label { font-size: 15px; letter-spacing: 3px; color: #e2e8f0; font-weight: bold; }
+  #cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
+    width: 100%; max-width: 340px;
+  }
+  .cal-dow { font-size: 9px; letter-spacing: 1px; color: #64748b; padding: 4px 0; }
+  .cal-day {
+    position: relative;
+    aspect-ratio: 1;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    background: #16213a;
+    display: flex; align-items: center; justify-content: center;
+    font-family: Georgia, serif;
+    padding: 0;
+  }
+  .cal-day.empty { background: none; border: none; }
+  .cal-day.dim { opacity: 0.35; }
+  .cal-day.playable { border-color: #334155; cursor: pointer; }
+  .cal-day.playable:active { border-color: #facc15; }
+  .cal-day.today { border-color: #facc15; }
+  .cal-day .cal-marker {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .cal-day .cal-marker svg { width: 78%; height: 78%; }
+  .cal-day .cal-marker .cal-emoji { font-size: 22px; opacity: 0.55; }
+  .cal-day .cal-num {
+    position: relative; z-index: 2;
+    font-size: 13px; font-weight: bold; color: #f1f5f9;
+    text-shadow: 0 0 4px #0f172a, 0 0 6px #0f172a;
+  }
+  #cal-legend {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+    font-size: 9px; letter-spacing: 1px; color: #94a3b8;
+    margin-top: 4px; max-width: 340px;
+  }
+  #cal-legend .leg { display: flex; align-items: center; gap: 4px; }
+  #cal-legend svg { width: 16px; height: 16px; }
+  #cal-home {
+    background: #facc15; color: #0f172a;
+    border: none; border-radius: 8px;
+    padding: 12px 32px; font-size: 13px;
+    font-weight: bold; letter-spacing: 3px;
+    font-family: Georgia, serif; cursor: pointer;
+    margin-top: 10px;
+  }
+  .archive-btn {
+    background: none; border: 1px solid #facc15; border-radius: 8px;
+    color: #facc15; font-family: Georgia, serif; font-size: 11px;
+    letter-spacing: 3px; padding: 10px 24px; cursor: pointer; margin-top: 8px;
+  }
 </style>
 </head>
 <body>
@@ -489,6 +585,7 @@
   <div id="splash-inner">
     <div id="splash-title">GAZPACHO</div>
     <div id="splash-rules">The aim of Gazpacho is to guess the 6-letter word from the clue. First, play words of 3, 4, then 5 letters to eliminate letters — anything you play disappears from the keyboard. But any letter that belongs to the 6-letter word is forbidden: use one and you lose a life. Lose 4 lives and the attempt is over. Make it to the final round and guess wrong, and you restart — but you only get 2 attempts each day. You can't reuse any word you've played in the last 7 days.</div>
+    <div style="font-size:13px;color:#94a3b8;font-style:italic;line-height:1.6;"><span style="color:#facc15;font-style:normal;">Going for gold:</span> cracked the clue straight away? Don't coast — dodge every forbidden letter and solve it on your first attempt to earn the Golden Gazpacho ⭐</div>
     <div style="font-size:13px; color:#facc15; font-style:normal; letter-spacing:1px; font-family:Georgia,serif;">Play every day to keep the streak alive!</div>
     <button id="splash-btn" onclick="dismissSplash()">L E T ' S &nbsp; P L A Y</button>
   </div>
@@ -499,6 +596,7 @@
   <div id="modal-inner" onclick="event.stopPropagation()">
     <div id="modal-title">GAZPACHO</div>
     <div id="modal-rules">The aim of Gazpacho is to guess the 6-letter word from the clue. First, play words of 3, 4, then 5 letters to eliminate letters — anything you play disappears from the keyboard. But any letter that belongs to the 6-letter word is forbidden: use one and you lose a life. Lose 4 lives and the attempt is over. Make it to the final round and guess wrong, and you restart — but you only get 2 attempts each day. You can't reuse any word you've played in the last 7 days.</div>
+    <div style="font-size:13px;color:#94a3b8;font-family:Georgia,serif;font-style:italic;line-height:1.6;"><span style="color:#facc15;font-style:normal;">Going for gold:</span> cracked the clue straight away? Don't coast — dodge every forbidden letter and solve it on your first attempt to earn the Golden Gazpacho ⭐</div>
     <div style="font-size:13px;color:#facc15;font-family:Georgia,serif;font-style:italic;line-height:1.6;">Play every day to keep the streak alive — miss a day and it resets to zero.</div>
     <div style="font-size:12px;color:#64748b;font-family:Georgia,serif;font-style:italic;line-height:1.6;border-top:1px solid #334155;padding-top:12px;">📱 On iPhone? Tap the <strong style="color:#94a3b8;font-style:normal;">Share</strong> button then <strong style="color:#94a3b8;font-style:normal;">Add to Home Screen</strong> for the full app experience.</div>
     <button id="modal-close" onclick="hideModal()">G O T &nbsp; I T</button>
@@ -535,10 +633,42 @@
     <div id="end-title"></div>
     <div id="end-word"></div>
     <div id="end-sub"></div>
+    <div id="end-golden" class="golden-badge">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="62" y="22" width="12" height="16" fill="#facc15"/>
+        <rect x="94" y="16" width="12" height="22" fill="#facc15"/>
+        <rect x="126" y="22" width="12" height="16" fill="#facc15"/>
+        <rect x="62" y="38" width="76" height="12" fill="#facc15"/>
+        <rect x="70" y="41" width="6" height="6" fill="#b45309"/>
+        <rect x="97" y="41" width="6" height="6" fill="#b45309"/>
+        <rect x="124" y="41" width="6" height="6" fill="#b45309"/>
+        <rect x="34" y="67" width="132" height="14" rx="3" fill="#facc15"/>
+        <path d="M38,81 L162,81 L140,166 L60,166 Z" fill="#eab308"/>
+        <ellipse cx="100" cy="74" rx="62" ry="15" fill="#92400e"/>
+        <ellipse cx="100" cy="74" rx="46" ry="11" fill="#b45309"/>
+        <ellipse cx="100" cy="74" rx="30" ry="7" fill="#d97706"/>
+        <ellipse cx="100" cy="74" rx="14" ry="4" fill="#fbbf24"/>
+      </svg>
+      <span>GOLDEN GAZPACHO<br>first attempt — no forbidden letters</span>
+    </div>
     <div id="end-grid" style="margin:10px 0;display:flex;flex-direction:column;gap:5px;align-items:center;"></div>
+    <div id="end-perfect" style="display:none;border:1px solid #334155;border-radius:8px;padding:10px 14px;margin:4px 0;width:100%;">
+      <div style="font-size:9px;letter-spacing:3px;color:#94a3b8;margin-bottom:6px;">T H E &nbsp; P E R F E C T &nbsp; L I N E</div>
+      <div id="end-perfect-words" style="font-size:14px;letter-spacing:1px;color:#facc15;font-weight:bold;"></div>
+      <div style="font-size:10px;color:#64748b;font-style:italic;margin-top:6px;">One of many — every puzzle has thousands. Now you know the trick.</div>
+    </div>
+    <div id="end-reveal-confirm" style="display:none;border:1px solid #854d0e;border-radius:8px;padding:10px 14px;margin:4px 0;font-size:11px;color:#fde68a;line-height:1.6;width:100%;">
+      Seeing the perfect line bars the gold tick for this day — for ever.
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+        <button onclick="confirmReveal()" style="background:#facc15;color:#0f172a;border:none;border-radius:6px;padding:8px 16px;font-size:11px;font-weight:bold;letter-spacing:2px;font-family:Georgia,serif;cursor:pointer;">R E V E A L</button>
+        <button onclick="cancelReveal()" style="background:none;border:1px solid #475569;border-radius:6px;color:#94a3b8;font-family:Georgia,serif;font-size:11px;letter-spacing:2px;padding:8px 16px;cursor:pointer;">K E E P &nbsp; T R Y I N G</button>
+      </div>
+    </div>
+    <button id="end-reveal-btn" onclick="revealPerfect()" style="background:none;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-family:Georgia,serif;font-size:10px;letter-spacing:2px;padding:8px 18px;cursor:pointer;margin-top:2px;">S H O W &nbsp; M E &nbsp; A &nbsp; G O L D E N &nbsp; G A Z P A C H O</button>
     <div id="next-puzzle-countdown" style="font-size:16px;font-weight:bold;color:#facc15;letter-spacing:3px;margin-top:4px;font-family:Georgia,serif;"></div>
-    <button onclick="shareResult(this)" style="margin-top:14px;background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;width:100%;">S H A R E &nbsp; R E S U L T</button>
-    <button onclick="window.location.reload()" style="margin-top:8px;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 24px;cursor:pointer;">R E F R E S H</button>
+    <button id="end-share-btn" onclick="shareResult(this)" style="margin-top:14px;background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;width:100%;">S H A R E &nbsp; R E S U L T</button>
+    <button id="end-archive-btn" class="archive-btn" onclick="openArchive()" style="width:100%;">P L A Y &nbsp; T H E &nbsp; A R C H I V E</button>
+    <button id="end-refresh-btn" onclick="window.location.reload()" style="margin-top:8px;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 24px;cursor:pointer;">R E F R E S H</button>
   </div>
   <div id="word-history-box">
     <div class="wh-label">3-LETTER WORDS USED (LAST 7 DAYS)</div>
@@ -598,8 +728,27 @@
     <div id="ice-container"></div>
   </div>
   <div id="ap-streak"></div>
+  <div id="ap-golden" class="golden-badge">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="62" y="22" width="12" height="16" fill="#facc15"/>
+      <rect x="94" y="16" width="12" height="22" fill="#facc15"/>
+      <rect x="126" y="22" width="12" height="16" fill="#facc15"/>
+      <rect x="62" y="38" width="76" height="12" fill="#facc15"/>
+      <rect x="70" y="41" width="6" height="6" fill="#b45309"/>
+      <rect x="97" y="41" width="6" height="6" fill="#b45309"/>
+      <rect x="124" y="41" width="6" height="6" fill="#b45309"/>
+      <rect x="34" y="67" width="132" height="14" rx="3" fill="#facc15"/>
+      <path d="M38,81 L162,81 L140,166 L60,166 Z" fill="#eab308"/>
+      <ellipse cx="100" cy="74" rx="62" ry="15" fill="#92400e"/>
+      <ellipse cx="100" cy="74" rx="46" ry="11" fill="#b45309"/>
+      <ellipse cx="100" cy="74" rx="30" ry="7" fill="#d97706"/>
+      <ellipse cx="100" cy="74" rx="14" ry="4" fill="#fbbf24"/>
+    </svg>
+    <span>GOLDEN GAZPACHO<br>first attempt — no forbidden letters</span>
+  </div>
   <div id="ap-grid" style="margin:4px 0;display:flex;flex-direction:column;gap:4px;align-items:center;"></div>
   <button onclick="shareResult(this)" style="background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:10px 24px;font-size:12px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;">S H A R E &nbsp; R E S U L T</button>
+  <button class="archive-btn" onclick="openArchive()">P L A Y &nbsp; T H E &nbsp; A R C H I V E</button>
   <div style="width:60px;height:1px;background:#334155;margin:4px 0;"></div>
   <div id="ap-label">N E X T &nbsp; P U Z Z L E</div>
   <div id="ap-time">1 8 : 0 8 <span style="font-size:11px;letter-spacing:2px;color:#64748b;">UK TIME</span></div>
@@ -608,6 +757,20 @@
     <button onclick="window.location.reload()" style="background:none;border:none;border-right:1px solid #38bdf8;color:#38bdf8;font-size:18px;cursor:pointer;padding:10px 14px;flex-shrink:0;">↺</button>
     <button onclick="shareGame(this)" style="background:none;border:none;color:#38bdf8;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 20px;cursor:pointer;flex:1;">S H A R E &nbsp; T H E &nbsp; G A M E</button>
   </div>
+</div>
+
+<!-- Archive calendar -->
+<div id="archive-cal">
+  <div id="cal-title">GAZPACHO</div>
+  <div id="cal-sub">T H E &nbsp; A R C H I V E</div>
+  <div id="cal-nav">
+    <button class="cal-arrow" id="cal-prev" onclick="calStep(-1)">&#8249;</button>
+    <div id="cal-month-label"></div>
+    <button class="cal-arrow" id="cal-next" onclick="calStep(1)">&#8250;</button>
+  </div>
+  <div id="cal-grid"></div>
+  <div id="cal-legend"></div>
+  <button id="cal-home" onclick="window.location.reload()">H O M E</button>
 </div>
 
 <script>
@@ -622,6 +785,9 @@ const LS_STREAK     = "gazpacho_streak";
 const LS_LAST_WIN   = "gazpacho_last_win";
 const LS_WORDS      = "gazpacho_words"; // JSON: [{word, date}]
 const LS_TODAY      = "gazpacho_today"; // date string of last played
+const LS_STATE      = "gazpacho_state";   // mid-game state for the daily puzzle
+const LS_ARCHIVE    = "gazpacho_archive"; // JSON: { "YYYY-MM-DD": {r:"w"|"f", g:0|1, a:0|1} }
+const ARCHIVE_START = "2026-06-01";
 
 // ── Date helpers ───────────────────────────────────────────────────────────────
 function todayStr() {
@@ -730,6 +896,79 @@ let failedR4         = [];   // round 4 guess per failed attempt (null if never 
 let currentInput     = "";
 let gameOver         = false;
 let messageTimer     = null;
+let submitting       = false;  // blocks concurrent submits during async dictionary check
+let countdownActive  = false;  // blocks input during the between-attempts countdown
+let archiveMode      = false;  // playing a past puzzle from the archive
+let archiveDate      = null;
+
+// ── Mid-game state persistence (daily puzzle only) ─────────────────────────────
+// iOS kills backgrounded PWA pages; without this, a reload between attempts
+// silently restarts the game at attempt 1 with full lives.
+function saveGameState() {
+  if (archiveMode || gameOver) return;
+  try {
+    localStorage.setItem(LS_STATE, JSON.stringify({
+      date: getActivePuzzleDate(), attempt, round, history,
+      hitsThisAttempt, failedAttempts, failedR4
+    }));
+  } catch {}
+}
+
+function saveStateForNextAttempt(nextAttempt) {
+  if (archiveMode) return;
+  try {
+    localStorage.setItem(LS_STATE, JSON.stringify({
+      date: getActivePuzzleDate(), attempt: nextAttempt, round: 0, history: [],
+      hitsThisAttempt: 0, failedAttempts, failedR4
+    }));
+  } catch {}
+}
+
+function clearGameState() {
+  try { localStorage.removeItem(LS_STATE); } catch {}
+}
+
+function restoreGameState(activeDate) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_STATE) || "null");
+    if (!saved || saved.date !== activeDate) { clearGameState(); return; }
+    attempt         = saved.attempt || 1;
+    round           = saved.round || 0;
+    history         = saved.history || [];
+    hitsThisAttempt = saved.hitsThisAttempt || 0;
+    failedAttempts  = saved.failedAttempts || [];
+    failedR4        = saved.failedR4 || [];
+  } catch { clearGameState(); }
+}
+
+// ── Archive results store ──────────────────────────────────────────────────────
+function getArchive() {
+  try { return JSON.parse(localStorage.getItem(LS_ARCHIVE) || "{}"); } catch { return {}; }
+}
+
+function recordResult(date, won, golden, viaArchive) {
+  const a = getArchive();
+  const ex = a[date];
+  // A daily result is canonical for its day — never overwritten by archive replays
+  // (records with no .r are spoil-only markers, not results — they don't block)
+  if (ex && ex.r && !ex.a) return;
+  const next = { r: won ? "w" : "f", g: golden ? 1 : 0, a: viaArchive ? 1 : 0 };
+  // A spoiled day (perfect line revealed) can never earn gold again; banked gold survives via rank
+  if (ex && ex.s) { next.g = 0; next.s = 1; }
+  // Archive replays keep the BEST result for the day (gold > solved > failed)
+  const rank = r => r.r === "w" ? (r.g ? 3 : 2) : 1;
+  if (ex && ex.r && ex.a && viaArchive && rank(next) <= rank(ex)) return;
+  a[date] = next;
+  try { localStorage.setItem(LS_ARCHIVE, JSON.stringify(a)); } catch {}
+}
+
+function markSpoiled(date) {
+  const a = getArchive();
+  const rec = a[date] || {};
+  rec.s = 1;
+  a[date] = rec;
+  try { localStorage.setItem(LS_ARCHIVE, JSON.stringify(a)); } catch {}
+}
 
 // ── Render helpers ─────────────────────────────────────────────────────────────
 function getUsedLetters() {
@@ -745,8 +984,9 @@ function foundThisAttempt() {
 }
 
 function render() {
-  // Streak
-  document.getElementById("streak-val").textContent = getStreak();
+  // Streak (element absent in archive mode — banner replaces it)
+  const sv = document.getElementById("streak-val");
+  if (sv) sv.textContent = getStreak();
 
   // Attempts hearts
   const ad = document.getElementById("attempts-display");
@@ -837,8 +1077,8 @@ function render() {
   });
 
   // Word history panel — filtered to current round's word length
-  // Hide word history in the final round or when game is over
-  document.getElementById("word-history-box").style.display = (round === 3 || gameOver) ? "none" : "";
+  // Hidden in the final round, when game is over, or in archive mode (no 7-day ban there)
+  document.getElementById("word-history-box").style.display = (round === 3 || gameOver || archiveMode) ? "none" : "";
 
   const wh = getWordHistory();
   const prevAttemptWords = failedAttempts.flatMap(a => a);
@@ -1099,7 +1339,7 @@ function shakeInput() {
 
 // ── Game actions ───────────────────────────────────────────────────────────────
 function handleKey(c) {
-  if (gameOver) return;
+  if (gameOver || submitting || countdownActive) return;
   if (currentInput.length < ROUND_LENGTHS[round]) {
     currentInput += c;
     render();
@@ -1107,13 +1347,22 @@ function handleKey(c) {
 }
 
 function handleDelete() {
-  if (gameOver) return;
+  if (gameOver || submitting || countdownActive) return;
   currentInput = currentInput.slice(0, -1);
   render();
 }
 
 async function handleSubmit() {
-  if (gameOver) return;
+  if (gameOver || submitting || countdownActive) return;
+  submitting = true;
+  try {
+    await doSubmit();
+  } finally {
+    submitting = false;
+  }
+}
+
+async function doSubmit() {
   const word = currentInput.toUpperCase().trim();
   const targetLen = ROUND_LENGTHS[round];
 
@@ -1133,8 +1382,8 @@ async function handleSubmit() {
     }
   }
 
-  // Check 7-day word ban + words used in previous attempts this game
-  const wordHistory = getWordHistory();
+  // Check 7-day word ban (daily only) + words used in previous attempts this game
+  const wordHistory = archiveMode ? [] : getWordHistory();
   const recentWords = new Set(wordHistory.map(e => e.word.toUpperCase()));
   const previousAttemptWords = new Set(failedAttempts.flatMap(a => a));
   if (round < 3 && (recentWords.has(word) || previousAttemptWords.has(word))) {
@@ -1164,18 +1413,25 @@ async function handleSubmit() {
       render(); // show tiles before countdown
       if (nextAttempt > MAX_ATTEMPTS) {
         gameOver = true;
-        updateStreak(false);
-        addWordsToHistory(failedAttempts.flat());
+        if (!archiveMode) {
+          updateStreak(false);
+          addWordsToHistory(failedAttempts.flat());
+          clearGameState();
+        }
         setTimeout(() => showEnd(false), 1500);
         return;
       }
+      saveStateForNextAttempt(nextAttempt);
       startCountdown(() => resetAttempt(nextAttempt));
       return;
     }
     // WIN
-    addWordsToHistory([...failedAttempts.flat(), ...history]);
-    updateStreak(true);
     gameOver = true;
+    if (!archiveMode) {
+      addWordsToHistory([...failedAttempts.flat(), ...history]);
+      updateStreak(true);
+      clearGameState();
+    }
     showEnd(true);
     return;
   }
@@ -1194,11 +1450,15 @@ async function handleSubmit() {
     render(); // show the hitting word with red tiles first
     if (nextAttempt > MAX_ATTEMPTS) {
       gameOver = true;
-      updateStreak(false);
-      addWordsToHistory(failedAttempts.flat());
+      if (!archiveMode) {
+        updateStreak(false);
+        addWordsToHistory(failedAttempts.flat());
+        clearGameState();
+      }
       setTimeout(() => showEnd(false), 1500);
       return;
     }
+    saveStateForNextAttempt(nextAttempt);
     startCountdown(() => resetAttempt(nextAttempt));
     return;
   }
@@ -1210,10 +1470,12 @@ async function handleSubmit() {
     flashMessage("Clean!", "ok", 1200);
   }
   round++;
+  saveGameState();
   render();
 }
 
 function startCountdown(callback) {
+  countdownActive = true;
   const el = document.getElementById("countdown-msg");
   el.style.display = "block";
   let secs = 5;
@@ -1221,6 +1483,7 @@ function startCountdown(callback) {
     el.innerHTML = `💥 Attempt lost — remember the forbidden letters you hit!<span class="countdown-num">${secs}</span>`;
     if (secs === 0) {
       el.style.display = "none";
+      countdownActive = false;
       if (callback) callback();
     } else {
       secs--;
@@ -1261,30 +1524,62 @@ function updateStreak(won) {
 
 // ── End screen ─────────────────────────────────────────────────────────────────
 function showEnd(won) {
+  // Perfect game: solved on the first attempt without a single forbidden letter.
+  // Daily perfect = Golden Gazpacho badge; archive perfect = gold tick on the calendar.
+  const perfect = won && attempt === 1 && hitsThisAttempt === 0;
+  const golden = perfect && !archiveMode;
   const eb = document.getElementById("end-box");
   eb.className = "visible" + (won ? "" : " lost");
-  document.getElementById("end-emoji").textContent = won ? "🎉" : "💀";
-  document.getElementById("end-title").textContent = won ? "Solved!" : "All attempts gone";
+  document.getElementById("end-emoji").textContent = won ? (perfect ? "⭐" : "🎉") : "💀";
+  document.getElementById("end-title").textContent = won
+    ? (golden ? "Golden Gazpacho!" : (perfect ? "Solved — perfectly!" : "Solved!"))
+    : "All attempts gone";
   document.getElementById("end-word").textContent = WORD;
-  document.getElementById("end-sub").textContent = won
-    ? `Streak: ${getStreak()} 🔥`
-    : `The word was ${WORD}`;
-  // Save completion
-  try {
-    localStorage.setItem("gazpacho_done_date", getActivePuzzleDate());
-    localStorage.setItem("gazpacho_done_won", won ? "1" : "0");
-    localStorage.setItem("gazpacho_done_word", WORD);
-    // Save share grid data
-    const shareAttempts = failedAttempts.map((words, i) => ({ words, guess4: failedR4[i] || null, won: false }));
-    if (won) shareAttempts.push({ words: [...history], guess4: null, won: true });
-    localStorage.setItem("gazpacho_share", JSON.stringify(shareAttempts));
-  } catch {}
+  document.getElementById("end-sub").textContent = archiveMode
+    ? `Archive — ${formatArchiveDate(archiveDate)}`
+    : (won ? `Streak: ${getStreak()} 🔥` : `The word was ${WORD}`);
+  document.getElementById("end-golden").className = "golden-badge" + (golden ? " visible" : "");
+
+  // Build share grid from in-memory attempts (not localStorage — archive must not pollute the daily share)
+  const shareAttempts = failedAttempts.map((words, i) => ({ words, guess4: failedR4[i] || null, won: false }));
+  if (won) shareAttempts.push({ words: [...history], guess4: null, won: true });
+
+  if (archiveMode) {
+    recordResult(archiveDate, won, perfect, true);
+  } else {
+    recordResult(getActivePuzzleDate(), won, golden, false);
+    try {
+      localStorage.setItem("gazpacho_done_date", getActivePuzzleDate());
+      localStorage.setItem("gazpacho_done_won", won ? "1" : "0");
+      localStorage.setItem("gazpacho_done_word", WORD);
+      localStorage.setItem("gazpacho_done_golden", golden ? "1" : "0");
+      localStorage.setItem("gazpacho_share", JSON.stringify(shareAttempts));
+    } catch {}
+  }
+
+  // Daily-only furniture: share button, next-puzzle countdown, refresh
+  document.getElementById("end-share-btn").style.display = archiveMode ? "none" : "";
+  document.getElementById("end-refresh-btn").style.display = archiveMode ? "none" : "";
+  document.getElementById("next-puzzle-countdown").style.display = archiveMode ? "none" : "";
+  const ab = document.getElementById("end-archive-btn");
+  ab.textContent = archiveMode ? "B A C K   T O   T H E   A R C H I V E" : "P L A Y   T H E   A R C H I V E";
+
+  // Reset the perfect-line reveal UI for this game
+  document.getElementById("end-perfect").style.display = "none";
+  document.getElementById("end-reveal-confirm").style.display = "none";
+  document.getElementById("end-reveal-btn").style.display = "";
+
   // Hide word history, remove keyboard padding, show countdown
   document.getElementById("word-history-box").style.display = "none";
   document.getElementById("app").style.paddingBottom = "16px";
-  document.getElementById("end-grid").innerHTML = buildShareGrid();
-  startNextPuzzleCountdown();
+  document.getElementById("end-grid").innerHTML = buildShareGrid(shareAttempts);
+  if (!archiveMode) startNextPuzzleCountdown();
   render();
+}
+
+function formatArchiveDate(ds) {
+  const d = new Date(ds + "T12:00:00Z");
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
 // ── Next puzzle countdown ──────────────────────────────────────────────────────
@@ -1327,6 +1622,8 @@ function showAlreadyPlayed() {
   document.getElementById("ap-streak").textContent = savedWon
     ? `Streak: ${getStreak()} 🔥`
     : "Better luck next time";
+  const savedGolden = localStorage.getItem("gazpacho_done_golden") === "1";
+  document.getElementById("ap-golden").className = "golden-badge" + (savedGolden ? " visible" : "");
   document.getElementById("ap-grid").innerHTML = buildShareGrid();
   const el = document.getElementById("ap-countdown");
   function tick() { el.textContent = countdownText(getNextPuzzleMs()); }
@@ -1480,10 +1777,177 @@ function initSplash() {
   if (seen) document.getElementById("splash").style.display = "none";
 }
 
+// ── Archive calendar ───────────────────────────────────────────────────────────
+const CAL_MONTHS = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+
+// Mini markers (numbers stay readable on top via .cal-num text-shadow)
+const MARKER_BOWL = `<svg viewBox="0 0 200 200" aria-hidden="true" opacity="0.85"><rect x="34" y="67" width="132" height="14" rx="3" fill="#263448"/><path d="M38,81 L162,81 L140,166 L60,166 Z" fill="#1e2d45"/><ellipse cx="100" cy="74" rx="62" ry="15" fill="#92400e"/><ellipse cx="100" cy="74" rx="46" ry="11" fill="#b45309"/><ellipse cx="100" cy="74" rx="30" ry="7" fill="#d97706"/><ellipse cx="100" cy="74" rx="14" ry="4" fill="#fbbf24"/></svg>`;
+const MARKER_GOLD = `<svg viewBox="0 0 200 200" aria-hidden="true" opacity="0.9"><rect x="62" y="22" width="12" height="16" fill="#facc15"/><rect x="94" y="16" width="12" height="22" fill="#facc15"/><rect x="126" y="22" width="12" height="16" fill="#facc15"/><rect x="62" y="38" width="76" height="12" fill="#facc15"/><rect x="34" y="67" width="132" height="14" rx="3" fill="#facc15"/><path d="M38,81 L162,81 L140,166 L60,166 Z" fill="#eab308"/><ellipse cx="100" cy="74" rx="62" ry="15" fill="#92400e"/><ellipse cx="100" cy="74" rx="46" ry="11" fill="#b45309"/><ellipse cx="100" cy="74" rx="30" ry="7" fill="#d97706"/></svg>`;
+const MARKER_TICK = `<svg viewBox="0 0 24 24" aria-hidden="true" opacity="0.7"><path d="M4 13 L9.5 18.5 L20 6" stroke="#4ade80" stroke-width="3.5" fill="none" stroke-linecap="square"/></svg>`;
+const MARKER_TICK_GOLD = `<svg viewBox="0 0 24 24" aria-hidden="true" opacity="0.85"><path d="M4 13 L9.5 18.5 L20 6" stroke="#facc15" stroke-width="3.5" fill="none" stroke-linecap="square"/></svg>`;
+const MARKER_CROSS = `<svg viewBox="0 0 24 24" aria-hidden="true" opacity="0.7"><path d="M5 5 L19 19 M19 5 L5 19" stroke="#ef4444" stroke-width="3.5" fill="none" stroke-linecap="square"/></svg>`;
+const MARKER_FAIL = `<span class="cal-emoji">👎</span>`;
+
+let calYear = 2026, calMonth = 5; // June 2026
+
+function openArchive() {
+  const ad = getActivePuzzleDate();
+  calYear = parseInt(ad.slice(0, 4));
+  calMonth = parseInt(ad.slice(5, 7)) - 1;
+  showCalendar();
+}
+
+function showCalendar() {
+  document.getElementById("app").style.display = "none";
+  document.getElementById("keyboard").style.display = "none";
+  document.getElementById("already-played").classList.remove("visible");
+  document.getElementById("archive-cal").classList.add("visible");
+  renderCalendar();
+}
+
+function calStep(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const activeDate = getActivePuzzleDate();
+  const maxYear = parseInt(activeDate.slice(0, 4));
+  const maxMonth = parseInt(activeDate.slice(5, 7)) - 1;
+
+  document.getElementById("cal-month-label").textContent = `${CAL_MONTHS[calMonth]} ${calYear}`;
+  document.getElementById("cal-prev").disabled = (calYear === 2026 && calMonth === 5) || calYear < 2026;
+  document.getElementById("cal-next").disabled = calYear > maxYear || (calYear === maxYear && calMonth >= maxMonth);
+
+  const arch = getArchive();
+  const puzzleDates = new Set(PUZZLES.map(p => p.date));
+  const grid = document.getElementById("cal-grid");
+  let h = ["M","T","W","T","F","S","S"].map(d => `<div class="cal-dow">${d}</div>`).join("");
+
+  const firstDow = (new Date(Date.UTC(calYear, calMonth, 1)).getUTCDay() + 6) % 7; // Monday-start
+  const daysInMonth = new Date(Date.UTC(calYear, calMonth + 1, 0)).getUTCDate();
+  for (let i = 0; i < firstDow; i++) h += `<div class="cal-day empty"></div>`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const ds = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const rec = arch[ds];
+    const isToday = ds === activeDate;
+    const playable = puzzleDates.has(ds) && ds >= ARCHIVE_START && ds <= activeDate;
+
+    let marker = "";
+    if (rec && rec.r) {
+      if (rec.a) marker = rec.r === "w" ? (rec.g ? MARKER_TICK_GOLD : MARKER_TICK) : MARKER_CROSS;
+      else if (rec.r === "w") marker = rec.g ? MARKER_GOLD : MARKER_BOWL;
+      else marker = MARKER_FAIL;
+    }
+
+    let cls = "cal-day";
+    if (!playable) cls += " dim";
+    else cls += " playable";
+    if (isToday) cls += " today";
+
+    let onclick = "";
+    if (playable) {
+      onclick = (isToday && !rec)
+        ? ` onclick="window.location.reload()"`
+        : ` onclick="startArchiveGame('${ds}')"`;
+    }
+    h += `<button class="${cls}"${onclick}>${marker ? `<span class="cal-marker">${marker}</span>` : ""}<span class="cal-num">${day}</span></button>`;
+  }
+  grid.innerHTML = h;
+
+  document.getElementById("cal-legend").innerHTML =
+    `<span class="leg">${MARKER_BOWL} SOLVED</span>` +
+    `<span class="leg">${MARKER_GOLD} GOLDEN</span>` +
+    `<span class="leg">👎 FAILED</span>` +
+    `<span class="leg">${MARKER_TICK}${MARKER_CROSS} ARCHIVE REPLAY</span>` +
+    `<span class="leg">${MARKER_TICK_GOLD} PERFECT REPLAY</span>`;
+}
+
+function startArchiveGame(date) {
+  const p = PUZZLES.find(x => x.date === date);
+  if (!p) return;
+  archiveMode = true;
+  archiveDate = date;
+  WORD = p.word.toUpperCase();
+  forbidden = new Set(WORD.split(""));
+  attempt = 1; round = 0; history = []; hitsThisAttempt = 0;
+  failedAttempts = []; failedR4 = []; currentInput = ""; gameOver = false;
+  submitting = false; countdownActive = false;
+
+  document.getElementById("archive-cal").classList.remove("visible");
+  document.getElementById("already-played").classList.remove("visible");
+  document.getElementById("app").style.display = "";
+  document.getElementById("app").style.paddingBottom = "";
+  document.getElementById("end-box").className = "";
+  document.getElementById("end-golden").className = "golden-badge";
+  document.getElementById("clue-text").textContent = `"${p.clue}"`;
+  document.getElementById("streak-box").innerHTML =
+    `A R C H I V E &nbsp; <span style="color:#facc15;font-size:11px;">${formatArchiveDate(date).toUpperCase()}</span> &nbsp; <span style="color:#64748b;font-size:9px;">(no streak)</span>`;
+  render();
+}
+
+// ── Perfect line generator + reveal ───────────────────────────────────────────
+// Finds a clean 3/4/5 triple (mutually disjoint letters, none forbidden) from the
+// embedded whitelist. Deterministic per puzzle word, so every player sees the same line.
+function perfectLine(word) {
+  const forb = new Set(word.toUpperCase().split(""));
+  const clean = w => ![...w.toUpperCase()].some(c => forb.has(c));
+  const all = [...COMMON_WORDS];
+  let seed = 0;
+  for (const c of word) seed = ((seed * 31 + c.charCodeAt(0)) >>> 0);
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+  const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+  const w3 = shuffle(all.filter(w => w.length === 3 && clean(w))).slice(0, 80);
+  const w4 = shuffle(all.filter(w => w.length === 4 && clean(w))).slice(0, 250);
+  const w5 = shuffle(all.filter(w => w.length === 5 && clean(w)));
+  for (const x of w3) {
+    const sx = new Set(x);
+    for (const y of w4) {
+      if ([...y].some(c => sx.has(c))) continue;
+      const sxy = new Set(x + y);
+      for (const z of w5) {
+        if (![...z].some(c => sxy.has(c))) return [x, y, z].map(w => w.toUpperCase());
+      }
+    }
+  }
+  return null;
+}
+
+function revealPerfect() {
+  const date = archiveMode ? archiveDate : getActivePuzzleDate();
+  const rec = getArchive()[date];
+  const free = rec && ((rec.r === "w" && rec.g === 1) || rec.s);
+  if (free) { showPerfectLine(); return; }
+  document.getElementById("end-reveal-btn").style.display = "none";
+  document.getElementById("end-reveal-confirm").style.display = "block";
+}
+
+function cancelReveal() {
+  document.getElementById("end-reveal-confirm").style.display = "none";
+  document.getElementById("end-reveal-btn").style.display = "";
+}
+
+function confirmReveal() {
+  markSpoiled(archiveMode ? archiveDate : getActivePuzzleDate());
+  document.getElementById("end-reveal-confirm").style.display = "none";
+  showPerfectLine();
+}
+
+function showPerfectLine() {
+  const line = perfectLine(WORD);
+  document.getElementById("end-reveal-btn").style.display = "none";
+  if (!line) return;
+  document.getElementById("end-perfect-words").textContent = `${line[0]} → ${line[1]} → ${line[2]} → ${WORD}`;
+  document.getElementById("end-perfect").style.display = "block";
+}
+
 // ── Share grid renderer ────────────────────────────────────────────────────────
-function buildShareGrid() {
+function buildShareGrid(attemptsParam) {
   try {
-    const attempts = JSON.parse(localStorage.getItem("gazpacho_share") || "null");
+    const attempts = attemptsParam || JSON.parse(localStorage.getItem("gazpacho_share") || "null");
     if (!attempts || !attempts.length) return "";
 
     const S = 14; // tile size px
@@ -1564,6 +2028,7 @@ function generateShareText() {
     if (won) {
       t += "\n" + (attempts.length === 1 ? "Solved first attempt!" : "Solved second attempt");
       if (s > 0) t += `  🔥 ${s}`;
+      if (localStorage.getItem("gazpacho_done_golden") === "1") t += "\n⭐ GOLDEN GAZPACHO — no forbidden letters!";
     } else {
       t += "\nFailed!";
     }
@@ -1619,10 +2084,19 @@ fetch("https://cdn.jsdelivr.net/gh/AXS-ENR-code/Gazpacho@main/puzzles.js")
     WORD = p.word.toUpperCase();
     forbidden = new Set(WORD.split(""));
     initSplash();
-    // If already played today, show countdown screen
     const activeDate = getActivePuzzleDate();
     const doneDate = localStorage.getItem("gazpacho_done_date");
     const lastWin = getLastWin();
+
+    // One-time archive backfill for existing players (history before this is unrecoverable)
+    if (!localStorage.getItem(LS_ARCHIVE)) {
+      const seed = {};
+      if (doneDate) seed[doneDate] = { r: localStorage.getItem("gazpacho_done_won") === "1" ? "w" : "f", g: 0, a: 0 };
+      if (lastWin && lastWin !== doneDate) seed[lastWin] = { r: "w", g: 0, a: 0 };
+      try { localStorage.setItem(LS_ARCHIVE, JSON.stringify(seed)); } catch {}
+    }
+
+    // If already played today, show countdown screen
     if (doneDate === activeDate || lastWin === activeDate) {
       // Backfill done_date if missing (player completed before lock was added)
       if (doneDate !== activeDate) {
@@ -1631,9 +2105,12 @@ fetch("https://cdn.jsdelivr.net/gh/AXS-ENR-code/Gazpacho@main/puzzles.js")
           localStorage.setItem("gazpacho_done_won", "1");
         } catch {}
       }
+      clearGameState();
       showAlreadyPlayed();
       return;
     }
+    // Resume a half-finished game (iOS reloads backgrounded PWAs)
+    restoreGameState(activeDate);
     document.getElementById("clue-text").textContent = `"${p.clue}"`;
     render();
   })
