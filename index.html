@@ -474,6 +474,14 @@
     cursor: pointer; font-family: Georgia, serif;
     display: flex; align-items: center; justify-content: center;
   }
+  #quit-btn {
+    position: absolute; left: 0;
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 50%; width: 30px; height: 30px;
+    color: #94a3b8; font-size: 14px;
+    cursor: pointer; font-family: Georgia, serif;
+    display: none; align-items: center; justify-content: center;
+  }
   @keyframes shake {
     0%,100%{transform:translateX(0)}
     20%{transform:translateX(-8px)}
@@ -516,7 +524,7 @@
   #cal-sub { font-size: 10px; letter-spacing: 4px; color: #94a3b8; }
   #cal-nav {
     display: flex; align-items: center; justify-content: space-between;
-    width: 100%; max-width: 340px; margin-top: 8px;
+    width: 100%; max-width: 430px; margin-top: 8px;
   }
   .cal-arrow {
     background: #1e293b; border: 1px solid #334155; border-radius: 8px;
@@ -526,10 +534,10 @@
   .cal-arrow:disabled { color: #334155; cursor: default; }
   #cal-month-label { font-size: 15px; letter-spacing: 3px; color: #e2e8f0; font-weight: bold; }
   #cal-grid {
-    display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
-    width: 100%; max-width: 340px;
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+    width: 100%; max-width: 430px;
   }
-  .cal-dow { font-size: 9px; letter-spacing: 1px; color: #64748b; padding: 4px 0; }
+  .cal-dow { font-size: 10px; letter-spacing: 1px; color: #64748b; padding: 4px 0; }
   .cal-day {
     position: relative;
     aspect-ratio: 1;
@@ -546,21 +554,21 @@
   .cal-day.playable:active { border-color: #facc15; }
   .cal-day.today { border-color: #facc15; }
   .cal-day .cal-marker {
-    position: absolute; inset: 0;
+    position: absolute; inset: 0; z-index: 2;
     display: flex; align-items: center; justify-content: center;
     pointer-events: none;
   }
-  .cal-day .cal-marker svg { width: 78%; height: 78%; }
-  .cal-day .cal-marker .cal-emoji { font-size: 22px; opacity: 0.55; }
+  .cal-day .cal-marker svg { width: 82%; height: 82%; }
+  .cal-day .cal-marker .cal-emoji { font-size: 30px; }
   .cal-day .cal-num {
-    position: relative; z-index: 2;
-    font-size: 13px; font-weight: bold; color: #f1f5f9;
-    text-shadow: 0 0 4px #0f172a, 0 0 6px #0f172a;
+    position: relative; z-index: 1;
+    font-size: 16px; font-weight: bold; color: #f1f5f9;
   }
+  .cal-day.marked .cal-num { opacity: 0.35; }
   #cal-legend {
     display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
     font-size: 9px; letter-spacing: 1px; color: #94a3b8;
-    margin-top: 4px; max-width: 340px;
+    margin-top: 4px; max-width: 430px;
   }
   #cal-legend .leg { display: flex; align-items: center; gap: 4px; }
   #cal-legend svg { width: 16px; height: 16px; }
@@ -576,6 +584,7 @@
     background: none; border: 1px solid #facc15; border-radius: 8px;
     color: #facc15; font-family: Georgia, serif; font-size: 11px;
     letter-spacing: 3px; padding: 10px 24px; cursor: pointer; margin-top: 8px;
+    white-space: nowrap;
   }
 </style>
 </head>
@@ -606,6 +615,7 @@
 <div id="app">
   <div id="title-row">
 <div id="title">GAZPACHO</div>
+    <button id="quit-btn" onclick="quitArchive()" aria-label="Quit to archive">✕</button>
     <button id="help-btn" onclick="showModal()">?</button>
   </div>
   <div id="streak-box">S T R E A K &nbsp; <span id="streak-val">0</span> 🔥</div>
@@ -664,10 +674,10 @@
         <button onclick="cancelReveal()" style="background:none;border:1px solid #475569;border-radius:6px;color:#94a3b8;font-family:Georgia,serif;font-size:11px;letter-spacing:2px;padding:8px 16px;cursor:pointer;">K E E P &nbsp; T R Y I N G</button>
       </div>
     </div>
-    <button id="end-reveal-btn" onclick="revealPerfect()" style="background:none;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-family:Georgia,serif;font-size:10px;letter-spacing:2px;padding:8px 18px;cursor:pointer;margin-top:2px;">S H O W &nbsp; M E &nbsp; A &nbsp; G O L D E N &nbsp; G A Z P A C H O</button>
+    <button id="end-reveal-btn" onclick="revealPerfect()" style="background:none;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-family:Georgia,serif;font-size:10px;letter-spacing:2px;padding:8px 18px;cursor:pointer;margin-top:2px;white-space:nowrap;">SHOW ME A GOLDEN GAZPACHO</button>
     <div id="next-puzzle-countdown" style="font-size:16px;font-weight:bold;color:#facc15;letter-spacing:3px;margin-top:4px;font-family:Georgia,serif;"></div>
     <button id="end-share-btn" onclick="shareResult(this)" style="margin-top:14px;background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;width:100%;">S H A R E &nbsp; R E S U L T</button>
-    <button id="end-archive-btn" class="archive-btn" onclick="openArchive()" style="width:100%;">P L A Y &nbsp; T H E &nbsp; A R C H I V E</button>
+    <button id="end-archive-btn" class="archive-btn" onclick="openArchive()" style="width:100%;">PLAY THE ARCHIVE</button>
     <button id="end-refresh-btn" onclick="window.location.reload()" style="margin-top:8px;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 24px;cursor:pointer;">R E F R E S H</button>
   </div>
   <div id="word-history-box">
@@ -748,7 +758,7 @@
   </div>
   <div id="ap-grid" style="margin:4px 0;display:flex;flex-direction:column;gap:4px;align-items:center;"></div>
   <button onclick="shareResult(this)" style="background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:10px 24px;font-size:12px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;">S H A R E &nbsp; R E S U L T</button>
-  <button class="archive-btn" onclick="openArchive()">P L A Y &nbsp; T H E &nbsp; A R C H I V E</button>
+  <button class="archive-btn" onclick="openArchive()">PLAY THE ARCHIVE</button>
   <div style="width:60px;height:1px;background:#334155;margin:4px 0;"></div>
   <div id="ap-label">N E X T &nbsp; P U Z Z L E</div>
   <div id="ap-time">1 8 : 0 8 <span style="font-size:11px;letter-spacing:2px;color:#64748b;">UK TIME</span></div>
@@ -1562,7 +1572,7 @@ function showEnd(won) {
   document.getElementById("end-refresh-btn").style.display = archiveMode ? "none" : "";
   document.getElementById("next-puzzle-countdown").style.display = archiveMode ? "none" : "";
   const ab = document.getElementById("end-archive-btn");
-  ab.textContent = archiveMode ? "B A C K   T O   T H E   A R C H I V E" : "P L A Y   T H E   A R C H I V E";
+  ab.textContent = archiveMode ? "BACK TO THE ARCHIVE" : "PLAY THE ARCHIVE";
 
   // Reset the perfect-line reveal UI for this game
   document.getElementById("end-perfect").style.display = "none";
@@ -1781,11 +1791,11 @@ function initSplash() {
 const CAL_MONTHS = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
 
 // Mini markers (numbers stay readable on top via .cal-num text-shadow)
-const MARKER_BOWL = `<svg viewBox="0 0 200 200" aria-hidden="true" opacity="0.85"><rect x="34" y="67" width="132" height="14" rx="3" fill="#263448"/><path d="M38,81 L162,81 L140,166 L60,166 Z" fill="#1e2d45"/><ellipse cx="100" cy="74" rx="62" ry="15" fill="#92400e"/><ellipse cx="100" cy="74" rx="46" ry="11" fill="#b45309"/><ellipse cx="100" cy="74" rx="30" ry="7" fill="#d97706"/><ellipse cx="100" cy="74" rx="14" ry="4" fill="#fbbf24"/></svg>`;
-const MARKER_GOLD = `<svg viewBox="0 0 200 200" aria-hidden="true" opacity="0.9"><rect x="62" y="22" width="12" height="16" fill="#facc15"/><rect x="94" y="16" width="12" height="22" fill="#facc15"/><rect x="126" y="22" width="12" height="16" fill="#facc15"/><rect x="62" y="38" width="76" height="12" fill="#facc15"/><rect x="34" y="67" width="132" height="14" rx="3" fill="#facc15"/><path d="M38,81 L162,81 L140,166 L60,166 Z" fill="#eab308"/><ellipse cx="100" cy="74" rx="62" ry="15" fill="#92400e"/><ellipse cx="100" cy="74" rx="46" ry="11" fill="#b45309"/><ellipse cx="100" cy="74" rx="30" ry="7" fill="#d97706"/></svg>`;
-const MARKER_TICK = `<svg viewBox="0 0 24 24" aria-hidden="true" opacity="0.7"><path d="M4 13 L9.5 18.5 L20 6" stroke="#4ade80" stroke-width="3.5" fill="none" stroke-linecap="square"/></svg>`;
-const MARKER_TICK_GOLD = `<svg viewBox="0 0 24 24" aria-hidden="true" opacity="0.85"><path d="M4 13 L9.5 18.5 L20 6" stroke="#facc15" stroke-width="3.5" fill="none" stroke-linecap="square"/></svg>`;
-const MARKER_CROSS = `<svg viewBox="0 0 24 24" aria-hidden="true" opacity="0.7"><path d="M5 5 L19 19 M19 5 L5 19" stroke="#ef4444" stroke-width="3.5" fill="none" stroke-linecap="square"/></svg>`;
+const MARKER_BOWL = `<svg viewBox="0 0 200 200" aria-hidden="true"><rect x="34" y="67" width="132" height="14" rx="3" fill="#263448"/><path d="M38,81 L162,81 L140,166 L60,166 Z" fill="#1e2d45"/><ellipse cx="100" cy="74" rx="62" ry="15" fill="#92400e"/><ellipse cx="100" cy="74" rx="46" ry="11" fill="#b45309"/><ellipse cx="100" cy="74" rx="30" ry="7" fill="#d97706"/><ellipse cx="100" cy="74" rx="14" ry="4" fill="#fbbf24"/></svg>`;
+const MARKER_GOLD = `<svg viewBox="0 0 200 200" aria-hidden="true"><rect x="62" y="22" width="12" height="16" fill="#facc15"/><rect x="94" y="16" width="12" height="22" fill="#facc15"/><rect x="126" y="22" width="12" height="16" fill="#facc15"/><rect x="62" y="38" width="76" height="12" fill="#facc15"/><rect x="34" y="67" width="132" height="14" rx="3" fill="#facc15"/><path d="M38,81 L162,81 L140,166 L60,166 Z" fill="#eab308"/><ellipse cx="100" cy="74" rx="62" ry="15" fill="#92400e"/><ellipse cx="100" cy="74" rx="46" ry="11" fill="#b45309"/><ellipse cx="100" cy="74" rx="30" ry="7" fill="#d97706"/></svg>`;
+const MARKER_TICK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13 L9.5 18.5 L20 6" stroke="#4ade80" stroke-width="3.5" fill="none" stroke-linecap="square"/></svg>`;
+const MARKER_TICK_GOLD = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13 L9.5 18.5 L20 6" stroke="#facc15" stroke-width="3.5" fill="none" stroke-linecap="square"/></svg>`;
+const MARKER_CROSS = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5 L19 19 M19 5 L5 19" stroke="#ef4444" stroke-width="3.5" fill="none" stroke-linecap="square"/></svg>`;
 const MARKER_FAIL = `<span class="cal-emoji">👎</span>`;
 
 let calYear = 2026, calMonth = 5; // June 2026
@@ -1800,9 +1810,15 @@ function openArchive() {
 function showCalendar() {
   document.getElementById("app").style.display = "none";
   document.getElementById("keyboard").style.display = "none";
+  document.getElementById("quit-btn").style.display = "none";
   document.getElementById("already-played").classList.remove("visible");
   document.getElementById("archive-cal").classList.add("visible");
   renderCalendar();
+}
+
+function quitArchive() {
+  // Abandon the archive game (nothing recorded) and return to the calendar
+  showCalendar();
 }
 
 function calStep(dir) {
@@ -1847,6 +1863,7 @@ function renderCalendar() {
     if (!playable) cls += " dim";
     else cls += " playable";
     if (isToday) cls += " today";
+    if (marker) cls += " marked";
 
     let onclick = "";
     if (playable) {
@@ -1883,6 +1900,7 @@ function startArchiveGame(date) {
   document.getElementById("app").style.paddingBottom = "";
   document.getElementById("end-box").className = "";
   document.getElementById("end-golden").className = "golden-badge";
+  document.getElementById("quit-btn").style.display = "flex";
   document.getElementById("clue-text").textContent = `"${p.clue}"`;
   document.getElementById("streak-box").innerHTML =
     `A R C H I V E &nbsp; <span style="color:#facc15;font-size:11px;">${formatArchiveDate(date).toUpperCase()}</span> &nbsp; <span style="color:#64748b;font-size:9px;">(no streak)</span>`;
