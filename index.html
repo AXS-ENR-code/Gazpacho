@@ -797,7 +797,7 @@ const LS_WORDS      = "gazpacho_words"; // JSON: [{word, date}]
 const LS_TODAY      = "gazpacho_today"; // date string of last played
 const LS_STATE      = "gazpacho_state";   // mid-game state for the daily puzzle
 const LS_ARCHIVE    = "gazpacho_archive"; // JSON: { "YYYY-MM-DD": {r:"w"|"f", g:0|1, a:0|1} }
-const ARCHIVE_START = "2026-06-01";
+const ARCHIVE_START = "2026-05-01";
 
 // ── Date helpers ───────────────────────────────────────────────────────────────
 function todayStr() {
@@ -1834,7 +1834,7 @@ function renderCalendar() {
   const maxMonth = parseInt(activeDate.slice(5, 7)) - 1;
 
   document.getElementById("cal-month-label").textContent = `${CAL_MONTHS[calMonth]} ${calYear}`;
-  document.getElementById("cal-prev").disabled = (calYear === 2026 && calMonth === 5) || calYear < 2026;
+  document.getElementById("cal-prev").disabled = (calYear === 2026 && calMonth === 4) || calYear < 2026;
   document.getElementById("cal-next").disabled = calYear > maxYear || (calYear === maxYear && calMonth >= maxMonth);
 
   const arch = getArchive();
