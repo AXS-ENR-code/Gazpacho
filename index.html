@@ -2094,7 +2094,7 @@ async function shareResult(btn) {
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────────
-fetch("https://cdn.jsdelivr.net/gh/AXS-ENR-code/Gazpacho@main/puzzles.js")
+fetch("https://cdn.jsdelivr.net/gh/AXS-ENR-code/Gazpacho@main/puzzles.js?d=" + todayStr().replace(/-/g, ""))
   .then(r => r.json())
   .then(data => {
     PUZZLES = data;
