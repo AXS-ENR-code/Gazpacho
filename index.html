@@ -677,8 +677,10 @@
     <button id="end-reveal-btn" onclick="revealPerfect()" style="background:none;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-family:Georgia,serif;font-size:10px;letter-spacing:2px;padding:8px 18px;cursor:pointer;margin-top:2px;white-space:nowrap;">SHOW ME A GOLDEN GAZPACHO</button>
     <div id="next-puzzle-countdown" style="font-size:16px;font-weight:bold;color:#facc15;letter-spacing:3px;margin-top:4px;font-family:Georgia,serif;"></div>
     <button id="end-share-btn" onclick="shareResult(this)" style="margin-top:14px;background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;width:100%;">S H A R E &nbsp; R E S U L T</button>
-    <button id="end-archive-btn" class="archive-btn" onclick="openArchive()" style="width:100%;">PLAY THE ARCHIVE</button>
-    <button id="end-refresh-btn" onclick="window.location.reload()" style="margin-top:8px;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 24px;cursor:pointer;">R E F R E S H</button>
+    <div id="end-bottom-row" style="display:flex;gap:8px;width:100%;margin-top:8px;">
+      <button id="end-archive-btn" class="archive-btn" onclick="openArchive()" style="flex:1;margin-top:0;padding:10px 12px;">PLAY THE ARCHIVE</button>
+      <button id="end-refresh-btn" onclick="window.location.reload()" style="flex:1;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 12px;cursor:pointer;">R E F R E S H</button>
+    </div>
   </div>
   <div id="word-history-box">
     <div class="wh-label">3-LETTER WORDS USED (LAST 7 DAYS)</div>
@@ -1577,7 +1579,9 @@ function showEnd(won) {
   // Reset the perfect-line reveal UI for this game
   document.getElementById("end-perfect").style.display = "none";
   document.getElementById("end-reveal-confirm").style.display = "none";
-  document.getElementById("end-reveal-btn").style.display = "";
+  // Already earned gold (Golden Gazpacho, or perfect archive replay)? The reveal
+  // button is redundant — hide it so REFRESH isn't pushed off-screen.
+  document.getElementById("end-reveal-btn").style.display = perfect ? "none" : "";
 
   // Hide word history, remove keyboard padding, show countdown
   document.getElementById("word-history-box").style.display = "none";
