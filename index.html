@@ -608,7 +608,7 @@
   .spicy-newword {
     flex: 1; background: #fb923c; color: #0f172a; border: none; border-radius: 8px;
     font-family: Georgia, serif; font-size: 11px; font-weight: bold;
-    letter-spacing: 3px; padding: 10px 12px; cursor: pointer;
+    letter-spacing: 2px; padding: 10px 12px; cursor: pointer; white-space: nowrap;
   }
   /* Spicy title treatment (replaces GAZPACHO on the play screen) */
   #title.spicy-title { font-size: 22px; letter-spacing: 4px; color: #fb923c; }
@@ -724,7 +724,7 @@
     </div>
     <button id="end-spicy-btn" class="spicy-btn" onclick="launchSpicy()" style="width:100%;margin-top:8px;">🌶️ PLAY SPICY</button>
     <div id="spicy-end-row" style="display:none;gap:8px;width:100%;margin-top:8px;">
-      <button id="spicy-newword-btn" class="spicy-newword" onclick="launchSpicy()">N E W &nbsp; W O R D</button>
+      <button id="spicy-newword-btn" class="spicy-newword" onclick="launchSpicy()">NEW WORD</button>
       <button onclick="window.location.reload()" style="flex:1;background:none;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 12px;cursor:pointer;">H O M E</button>
     </div>
   </div>
