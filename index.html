@@ -586,6 +586,45 @@
     letter-spacing: 3px; padding: 10px 24px; cursor: pointer; margin-top: 8px;
     white-space: nowrap;
   }
+  /* Spicy Gazpacho */
+  .tile.pos { background: #16a34a; border-color: #4ade80; color: #fff; }
+  /* Round-4 skeleton: dashed green outline = a slot holding a found letter (order unknown).
+     Deliberately NOT a solid fill, so it never reads as a confirmed-correct tile. */
+  .tile.skel { border: 2px dashed #4ade80; }
+  #spicy-skel { display: none; gap: 6px; justify-content: center; margin: 6px 0; }
+  #spicy-caption {
+    font-size: 12px; color: #4ade80; font-style: italic;
+    line-height: 1.5; max-width: 320px; margin: 2px auto 0; text-align: center;
+  }
+  .spicy-btn {
+    background: none; border: 1px solid #fb923c; border-radius: 8px;
+    color: #fb923c; font-family: Georgia, serif; font-size: 11px;
+    letter-spacing: 3px; padding: 10px 24px; cursor: pointer; margin-top: 8px;
+    white-space: nowrap;
+  }
+  .spicy-btn:active { background: #fb923c; color: #0f172a; }
+  /* Resting screen: archive + spicy buttons share one width so they match */
+  #already-played .archive-btn, #already-played .spicy-btn { width: 230px; box-sizing: border-box; }
+  .spicy-newword {
+    flex: 1; background: #fb923c; color: #0f172a; border: none; border-radius: 8px;
+    font-family: Georgia, serif; font-size: 11px; font-weight: bold;
+    letter-spacing: 3px; padding: 10px 12px; cursor: pointer;
+  }
+  /* Spicy title treatment (replaces GAZPACHO on the play screen) */
+  #title.spicy-title { font-size: 22px; letter-spacing: 4px; color: #fb923c; }
+  /* Spicy quit control: a labelled pill rather than a bare ✕ */
+  #quit-btn.spicy-quit { width: auto; border-radius: 8px; padding: 0 12px; font-size: 11px; letter-spacing: 2px; }
+  /* In-game mode toggle (lives where the streak/banner sits) */
+  .spicy-toggle { display: inline-flex; border: 1px solid #fb923c; border-radius: 9px; overflow: hidden; }
+  .spicy-toggle.locked { border-color: #7c4a23; opacity: 0.85; }
+  .st-opt {
+    background: none; border: none; color: #fb923c; font-family: Georgia, serif;
+    font-size: 11px; letter-spacing: 2px; padding: 6px 16px; cursor: pointer;
+  }
+  .st-opt.active { background: #fb923c; color: #0f172a; font-weight: bold; }
+  .spicy-toggle.locked .st-opt { cursor: default; color: #9a6b46; }
+  .spicy-toggle.locked .st-opt.active { background: #7c4a23; color: #1c1209; }
+  .st-locked-note { font-size: 9px; letter-spacing: 2px; color: #64748b; margin-left: 8px; }
 </style>
 </head>
 <body>
@@ -636,6 +675,8 @@
   <div id="round-row"></div>
   <div id="history-area"></div>
   <div id="input-row"></div>
+  <div id="spicy-skel" style="display:none"></div>
+  <div id="spicy-caption" style="display:none"></div>
   <div id="countdown-msg" style="display:none"></div>
   <div id="message"></div>
   <div id="end-box">
@@ -680,6 +721,11 @@
     <div id="end-bottom-row" style="display:flex;gap:8px;width:100%;margin-top:8px;">
       <button id="end-archive-btn" class="archive-btn" onclick="openArchive()" style="flex:1;margin-top:0;padding:10px 12px;">PLAY THE ARCHIVE</button>
       <button id="end-refresh-btn" onclick="window.location.reload()" style="flex:1;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 12px;cursor:pointer;">R E F R E S H</button>
+    </div>
+    <button id="end-spicy-btn" class="spicy-btn" onclick="launchSpicy()" style="width:100%;margin-top:8px;">🌶️ PLAY SPICY</button>
+    <div id="spicy-end-row" style="display:none;gap:8px;width:100%;margin-top:8px;">
+      <button id="spicy-newword-btn" class="spicy-newword" onclick="launchSpicy()">N E W &nbsp; W O R D</button>
+      <button onclick="window.location.reload()" style="flex:1;background:none;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 12px;cursor:pointer;">H O M E</button>
     </div>
   </div>
   <div id="word-history-box">
@@ -761,6 +807,7 @@
   <div id="ap-grid" style="margin:4px 0;display:flex;flex-direction:column;gap:4px;align-items:center;"></div>
   <button onclick="shareResult(this)" style="background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:10px 24px;font-size:12px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;">S H A R E &nbsp; R E S U L T</button>
   <button class="archive-btn" onclick="openArchive()">PLAY THE ARCHIVE</button>
+  <button class="spicy-btn" onclick="launchSpicy()">🌶️ PLAY SPICY</button>
   <div style="width:60px;height:1px;background:#334155;margin:4px 0;"></div>
   <div id="ap-label">N E X T &nbsp; P U Z Z L E</div>
   <div id="ap-time">1 8 : 0 8 <span style="font-size:11px;letter-spacing:2px;color:#64748b;">UK TIME</span></div>
@@ -800,6 +847,16 @@ const LS_TODAY      = "gazpacho_today"; // date string of last played
 const LS_STATE      = "gazpacho_state";   // mid-game state for the daily puzzle
 const LS_ARCHIVE    = "gazpacho_archive"; // JSON: { "YYYY-MM-DD": {r:"w"|"f", g:0|1, a:0|1} }
 const ARCHIVE_START = "2026-05-01";
+
+// ── Spicy Gazpacho ───────────────────────────────────────────────────────────
+// A clueless variant: random 6-letter secret word, 3 attempts, optional easy mode.
+const LS_SPICY_USED = "gazpacho_spicy_used"; // JSON: words already served (never repeat)
+const LS_SPICY_EASY = "gazpacho_spicy_easy"; // "1" = easy mode preference
+const SPICY_ATTEMPTS = 3;
+let spicyMode = false; // currently playing Spicy
+let spicyEasy = false; // easy mode: green positional flash on a wrong final guess
+let spicySkelReveal = false; // showing the 6-letter skeleton after an attempt died on hits
+const SPICY_WORDS=["ABOARD","ABOUND","ABROAD","ABRUPT","ABSENT","ABSORB","ABSURD","ABUSER","ACCENT","ACCEPT","ACCESS","ACCORD","ACCUSE","ACHING","ACIDIC","ACROSS","ACTING","ACTION","ACTIVE","ACTUAL","ADDICT","ADHERE","ADJUST","ADMIRE","ADVERT","ADVICE","ADVISE","AERIAL","AFFAIR","AFFECT","AFFIRM","AFFORD","AFLOAT","AFRAID","AGENCY","AGENDA","AGREED","AIMING","AIRING","AIRWAY","ALBEIT","ALLEGE","ALLIED","ALLIES","ALLURE","ALMOND","ALMOST","ALPINE","ALUMNI","ALWAYS","AMAZED","AMBUSH","AMENDS","AMIDST","AMOUNT","AMUSED","ANCHOR","ANEMIA","ANGLED","ANIMAL","ANNALS","ANNUAL","ANSWER","ANTHEM","ANYHOW","ANYONE","ANYWAY","APATHY","APIECE","APPEAL","APPEAR","ARCADE","ARCHED","ARCHER","ARCHES","ARDENT","ARISEN","ARMADA","ARMING","ARMORY","AROUND","ARREST","ARRIVE","ARTERY","ARTIST","ASCEND","ASCENT","ASHORE","ASLEEP","ASPECT","ASPIRE","ASSERT","ASSESS","ASSETS","ASSIGN","ASSIST","ASSUME","ASSURE","ASTHMA","ASTRAL","ASTRAY","ASWELL","ASYLUM","ATOMIC","ATRIUM","ATTACH","ATTACK","ATTAIN","ATTEND","ATTEST","ATTIRE","AUBURN","AUGUST","AUNTIE","AURORA","AUTHOR","AUTISM","AUTUMN","AVENGE","AVENUE","AWAKEN","AWHILE","BACKED","BACKUP","BADGER","BAGGED","BAKERY","BAKING","BALLAD","BALLET","BALLOT","BAMBOO","BANANA","BANDED","BANDIT","BANKER","BANNER","BANTER","BARBED","BARBER","BARELY","BARKER","BARLEY","BARRED","BARREL","BARREN","BARROW","BASKET","BASQUE","BATTER","BATTLE","BAZAAR","BEACON","BEARER","BEATEN","BEAUTY","BEAVER","BECOME","BEETLE","BEFORE","BEGGAR","BEHALF","BEHAVE","BEHIND","BEHOLD","BELIEF","BELONG","BENDER","BENIGN","BERGER","BESIDE","BETRAY","BETTER","BEWARE","BEYOND","BIDDER","BIGGER","BIKINI","BILLED","BINARY","BINDER","BIOPSY","BIRDIE","BITING","BITTEN","BITTER","BLAMED","BLAZER","BLEACH","BLIGHT","BLONDE","BLOODY","BLOUSE","BLOWER","BLURRY","BODIED","BODILY","BOILED","BOILER","BOLDLY","BOMBED","BOMBER","BONDED","BONNET","BOOKED","BOOKER","BOOMER","BOOTED","BORDER","BORING","BORROW","BOTANY","BOTHER","BOTTLE","BOTTOM","BOUGHT","BOUNCE","BOUNTY","BOWING","BOWLER","BOWMAN","BOXING","BRACES","BRAINS","BRANCH","BRANDY","BREACH","BREAST","BREATH","BREEZE","BREEZY","BREWER","BRIDAL","BRIDGE","BRIEFS","BRIGHT","BROKEN","BROKER","BRONZE","BROWSE","BRUISE","BRUNCH","BRUTAL","BUBBLE","BUBBLY","BUCKET","BUCKLE","BUDGET","BUFFER","BUFFET","BULLET","BUMMED","BUMMER","BUMPER","BUNDLE","BUNKER","BURDEN","BUREAU","BURIAL","BURIED","BURNED","BURNER","BUSTED","BUSTER","BUTLER","BUTTER","BUTTON","BUZZER","BYPASS","CALLER","CALMLY","CALVES","CAMERA","CAMPER","CAMPUS","CANARY","CANCEL","CANCER","CANDID","CANDLE","CANINE","CANNED","CANNON","CANNOT","CANOPY","CANTON","CANTOR","CANVAS","CANYON","CAPPED","CARBON","CAREER","CARPET","CARROT","CARTEL","CARTON","CARVER","CASING","CASINO","CASKET","CASTLE","CASTOR","CASUAL","CATCHY","CATTLE","CAUCUS","CAUGHT","CAUSAL","CAVEAT","CAVIAR","CAVITY","CELERY","CELLAR","CEMENT","CENSOR","CENSUS","CENTER","CEREAL","CHAKRA","CHANCE","CHANGE","CHAPEL","CHARGE","CHASER","CHEEKY","CHEESE","CHEESY","CHEQUE","CHERRY","CHILLY","CHOICE","CHOOSE","CHORAL","CHORUS","CHOSEN","CHROME","CHUBBY","CHUNKY","CHURCH","CINEMA","CIPHER","CIRCLE","CIRCUS","CITRUS","CLASSY","CLAUSE","CLERGY","CLERIC","CLEVER","CLICHE","CLIENT","CLIMAX","CLINCH","CLINIC","CLIQUE","CLOSED","CLOSER","CLOSET","CLOUDY","CLOVER","CLUMSY","CLUTCH","COARSE","COATED","COBALT","COFFEE","COFFIN","COHORT","COLDER","COLLAR","COLONY","COLORS","COLUMN","COMBAT","COMEDY","COMING","COMMIT","COMMON","COMPEL","COMPLY","CONCUR","CONNER","CONSUL","CONTRA","CONVEX","CONVEY","CONVOY","COOKER","COOLER","COOPER","COPIED","COPING","COPPER","CORDON","CORNER","CORONA","CORPSE","CORPUS","CORTEX","COSMIC","COSMOS","COSTLY","COTTON","COUGAR","COUNTY","COUPLE","COUPON","COURSE","COUSIN","COVERT","COWARD","COWBOY","COYOTE","CRADLE","CRAFTY","CRANKY","CRATER","CRAVEN","CRAZED","CREAMY","CREASE","CREATE","CREDIT","CREEPY","CRINGE","CRISES","CRISIS","CRISPY","CRITIC","CROUCH","CRUISE","CRUNCH","CRYING","CUCKOO","CUDDLE","CUDDLY","CURFEW","CURING","CURLED","CURSED","CURVED","CUSTOM","CUTLER","CUTOFF","CUTTER","CYCLIC","DAGGER","DAMAGE","DAMNED","DANCER","DANGER","DARING","DASHED","DATING","DEACON","DEADLY","DEALER","DEARLY","DEBATE","DEBRIS","DECADE","DECEIT","DECENT","DECIDE","DECREE","DEEPEN","DEEPLY","DEFEAT","DEFECT","DEFEND","DEFINE","DEGREE","DELETE","DELUXE","DEMAND","DEMISE","DENIAL","DENOTE","DENTAL","DEPART","DEPEND","DEPICT","DEPLOY","DEPORT","DEPUTY","DERIVE","DESERT","DESIGN","DESIRE","DETAIL","DETAIN","DETECT","DETOUR","DEVICE","DEVISE","DEVOID","DEVOTE","DEVOUR","DEVOUT","DHARMA","DIAPER","DIESEL","DIFFER","DIGEST","DIGGER","DILUTE","DINING","DINNER","DIPPED","DIRECT","DISARM","DISMAL","DISMAY","DISTAL","DIVERS","DIVERT","DIVIDE","DIVINE","DIVING","DOCTOR","DODGER","DOESNT","DOLLAR","DOMAIN","DOMINO","DONATE","DONKEY","DOODLE","DORSAL","DOSAGE","DOTTED","DOUBLE","DOUBLY","DRAGON","DRAPER","DRAWER","DREAMT","DREAMY","DRIVEN","DRIVER","DRYING","DUPLEX","DURING","DYNAMO","EASIER","EASILY","EASING","EATING","EDGING","EDIBLE","EDITOR","EFFECT","EFFORT","EIGHTH","EIGHTY","EITHER","ELDEST","ELEVEN","ELIXIR","EMBARK","EMBLEM","EMBODY","EMBRYO","EMERGE","EMPIRE","EMPLOY","ENABLE","ENAMEL","ENCORE","ENDING","ENDURE","ENERGY","ENGAGE","ENGINE","ENIGMA","ENLIST","ENOUGH","ENRICH","ENROLL","ENSIGN","ENSURE","ENTAIL","ENTICE","ENTIRE","ENTITY","ENZYME","EQUATE","EQUITY","ERASED","ERODED","ESCAPE","ESCORT","ESTATE","ESTEEM","ETHICS","ETHNIC","EUREKA","EVENLY","EVOLVE","EXCEED","EXCEPT","EXCESS","EXCISE","EXCITE","EXCUSE","EXEMPT","EXHALE","EXOTIC","EXPAND","EXPECT","EXPERT","EXPIRE","EXPORT","EXPOSE","EXTANT","EXTEND","EXTENT","FABRIC","FACADE","FACING","FACTOR","FADING","FAIRLY","FALCON","FALLEN","FAMILY","FAMINE","FAMOUS","FANDOM","FARMER","FASTER","FATHER","FATHOM","FAULTY","FEARED","FEEBLE","FEEDER","FELINE","FELLOW","FELONY","FEMALE","FENDER","FETISH","FEUDAL","FIANCE","FIASCO","FICKLE","FIDDLE","FIERCE","FIESTA","FIGURE","FILING","FILLED","FILLER","FILTER","FILTHY","FINALE","FINDER","FINELY","FINGER","FINISH","FINITE","FIRING","FIRMLY","FISCAL","FISHER","FITTED","FIXING","FLASHY","FLAVOR","FLAWED","FLEECE","FLIGHT","FLOPPY","FLORAL","FLORES","FLOWER","FLUENT","FLUFFY","FLYING","FODDER","FOLDED","FOLDER","FOLLOW","FONDLY","FOOTED","FORAGE","FORBID","FORCED","FOREST","FORGED","FORGET","FORGOT","FORMAL","FORMAT","FORMED","FORMER","FOSSIL","FOUGHT","FOURTH","FOWLER","FRAMED","FREAKY","FREELY","FREEZE","FRENZY","FRIEND","FRIGHT","FRINGE","FROSTY","FROZEN","FRUITY","FULLER","FUMBLE","FUNDED","FUNGAL","FUNGUS","FUNNEL","FUSION","FUTILE","FUTURE","GADGET","GALAXY","GALLEY","GALLON","GAMBLE","GAMING","GAPING","GARAGE","GARDEN","GARLIC","GARNER","GARNET","GATHER","GAZING","GEARED","GENDER","GENERA","GENIUS","GENOME","GENTLE","GENTLY","GENTRY","GHETTO","GIFTED","GIGGLE","GILDED","GINGER","GIVING","GLADLY","GLANCE","GLAZED","GLOBAL","GLOOMY","GLOSSY","GLOVER","GLUTEN","GOALIE","GOBLIN","GOLDEN","GOLFER","GOSPEL","GOSSIP","GOTTEN","GOVERN","GRADED","GRADER","GRANGE","GRANNY","GRASSY","GRAVEL","GREASE","GREASY","GREEDY","GRIEVE","GRITTY","GROOVE","GROUND","GROUSE","GROWTH","GRUDGE","GRUMPY","GUILTY","GUINEA","GUITAR","GUNMAN","GUNNER","GUTTER","HACKED","HACKER","HAIRED","HALVES","HAMLET","HAMMER","HAMPER","HANDED","HANDLE","HANGAR","HANGER","HAPPEN","HARASS","HARBOR","HARDEN","HARDER","HARDLY","HASSLE","HATRED","HAVENT","HAZARD","HEADED","HEADER","HEALER","HEALTH","HEARTS","HEARTY","HEATER","HEAVEN","HECTIC","HEIGHT","HELIUM","HELLER","HELMET","HELPER","HERALD","HERBAL","HEREBY","HEREIN","HERESY","HERMIT","HEROIC","HIATUS","HIDDEN","HIGHER","HIGHLY","HINDER","HITTER","HOCKEY","HOLDER","HOLLOW","HOMAGE","HONEST","HOODED","HOODIE","HOOKED","HOOKUP","HOPPED","HOPPER","HORNET","HORRID","HORROR","HOSTEL","HOTTER","HOURLY","HUGELY","HUMANE","HUMBLE","HUMBLY","HUNGER","HUNGRY","HURDLE","HUSTLE","HYBRID","ICONIC","IGNITE","IGNORE","IMMUNE","IMPACT","IMPEDE","IMPORT","IMPOSE","INCITE","INCOME","INDEED","INDIGO","INDOOR","INDUCE","INFANT","INFECT","INFLUX","INFORM","INHALE","INJECT","INJURE","INJURY","INLAND","INMATE","INNATE","INNING","INSANE","INSECT","INSERT","INSIDE","INSIST","INSULT","INSURE","INTACT","INTAKE","INTEND","INTENT","INTERN","INVADE","INVENT","INVEST","INVITE","INVOKE","INWARD","IODINE","ISLAND","ITSELF","JACKET","JAGGED","JAGUAR","JARGON","JINGLE","JOCKEY","JOYFUL","JOYOUS","JUMPER","JUNGLE","JUNIOR","KARATE","KEEPER","KENNEL","KERNEL","KETTLE","KICKER","KIDNAP","KIDNEY","KILLER","KINASE","KINDLE","KINDLY","KITTEN","KNIGHT","KOSHER","LABOUR","LADDER","LADIES","LAGOON","LAMENT","LANDED","LANDER","LARVAE","LASTLY","LATELY","LATENT","LATEST","LATTER","LAUNCH","LAUREL","LAVISH","LAWFUL","LAWYER","LAYING","LAYOUT","LEADER","LEAGUE","LEARNT","LEAVES","LEDGER","LEGACY","LEGEND","LEGGED","LEGION","LENDER","LENGTH","LESSEN","LESSER","LESSON","LETHAL","LETTER","LEVANT","LIABLE","LIKELY","LIKING","LINDEN","LINEAR","LINGER","LINING","LINKED","LIQUID","LIQUOR","LISTED","LISTEN","LITTER","LITTLE","LIVELY","LIVING","LIZARD","LOADED","LOCATE","LOCKED","LOCKER","LODGED","LOGGED","LONELY","LONGER","LOOSEN","LOSING","LOTION","LOUDLY","LOUNGE","LOVELY","LOVING","LUMBER","LUXURY","MADAME","MADDEN","MADMAN","MAGNET","MAGNUM","MAIDEN","MAILED","MAINLY","MAKING","MALICE","MAMMAL","MANAGE","MANIAC","MANNER","MANTLE","MANTRA","MANUAL","MANURE","MARBLE","MARGIN","MARINA","MARINE","MARKED","MARKER","MARKET","MAROON","MARROW","MARTYR","MARVEL","MASCOT","MASKED","MASTER","MATING","MATRIX","MATTER","MATURE","MAYHEM","MEADOW","MEDIAL","MEDIAN","MEDIUM","MEDLEY","MELLOW","MELODY","MELTED","MEMBER","MEMOIR","MEMORY","MENACE","MENTAL","MENTOR","MERCER","MERELY","MERGER","METEOR","METHOD","METHYL","METRIC","MIDDAY","MIDDLE","MIDGET","MIDWAY","MIGHTY","MILDLY","MILLER","MINDED","MINGLE","MINING","MINUTE","MIRAGE","MIRROR","MISERY","MISLED","MISTER","MISUSE","MOBILE","MODERN","MODEST","MODIFY","MODULE","MOLTEN","MOMENT","MONKEY","MORALE","MORALS","MORBID","MORROW","MORTAL","MORTAR","MOSAIC","MOSQUE","MOSTLY","MOTHER","MOTION","MOTIVE","MOVING","MUFFIN","MULLER","MUSCLE","MUSEUM","MUSTER","MUTANT","MUTINY","MUTUAL","MUZZLE","MYRIAD","MYRTLE","MYSELF","MYSTIC","NAMELY","NAMING","NAPKIN","NARROW","NATION","NATIVE","NATURE","NAUSEA","NEARBY","NEARLY","NEATLY","NEBULA","NECTAR","NEEDLE","NEPHEW","NEURAL","NEURON","NICELY","NICKEL","NIGHTS","NINETY","NOBODY","NOODLE","NORMAL","NOTICE","NOTIFY","NOTION","NOVICE","NOZZLE","NUCLEI","NUDITY","NUGGET","NUMBER","OBJECT","OBTAIN","OCCULT","OCCUPY","OCULUS","OFFEND","OFFICE","OFFSET","ONWARD","OPAQUE","OPENER","OPENLY","OPPOSE","OPTICS","OPTION","ORACLE","ORANGE","ORCHID","ORDEAL","ORIENT","ORIGIN","ORNATE","ORPHAN","OUTAGE","OUTCRY","OUTFIT","OUTING","OUTLAW","OUTLET","OUTPUT","OUTSET","OVERLY","OXYGEN","OYSTER","PACKER","PACKET","PADDLE","PAIRED","PALACE","PALATE","PALLET","PALMER","PANTRY","PARADE","PARCEL","PARDON","PARENT","PARISH","PARITY","PARKER","PARLOR","PARODY","PAROLE","PARROT","PARTED","PARTLY","PASSER","PASTEL","PASTOR","PASTRY","PATENT","PATROL","PATRON","PAVING","PAYDAY","PAYING","PAYOFF","PEAKED","PEANUT","PEBBLE","PEELED","PELVIC","PELVIS","PENCIL","PEOPLE","PEPPER","PERIOD","PERISH","PERMIT","PERSON","PETITE","PETROL","PHASES","PHOTON","PHRASE","PIAZZA","PICKED","PICKET","PICKLE","PICKUP","PICNIC","PIERCE","PIGEON","PILING","PILLAR","PILLOW","PINNED","PIPING","PIRACY","PIRATE","PISTOL","PISTON","PITTED","PLAGUE","PLANET","PLAQUE","PLASMA","PLATED","PLAYER","PLEASE","PLEDGE","PLENTY","PLIGHT","PLUNGE","PLURAL","POCKET","PODIUM","POETIC","POETRY","POISED","POISON","POKING","POLICE","POLICY","POLISH","POLITE","POLLED","POLLEN","PONDER","POORLY","POROUS","PORTAL","PORTER","POSING","POSTAL","POSTED","POSTER","POTATO","POTENT","POTION","POTTER","POWDER","PRAISE","PRAYER","PREACH","PREFER","PREFIX","PRETTY","PRICED","PRIEST","PRIMAL","PRIMER","PRINCE","PRISON","PROFIT","PROMPT","PROPER","PROTON","PROVED","PROVEN","PSEUDO","PSYCHE","PUBLIC","PUDDLE","PULPIT","PUNISH","PUPPET","PURELY","PURITY","PURPLE","PURSUE","PUZZLE","PYTHON","QUAINT","QUAKER","QUARRY","QUARTZ","QUIRKY","RABBIT","RABIES","RACIAL","RACING","RACISM","RACIST","RACKET","RADIAL","RADIUS","RAFFLE","RAGGED","RAGING","RAIDER","RAISED","RANDOM","RANGED","RANGER","RANKED","RANSOM","RAPPER","RAPTOR","RARELY","RARITY","RATHER","RATING","RATION","RATTLE","RAVENS","RAVINE","RAVING","READER","REALLY","REALTY","REAPER","REASON","REBATE","REBORN","RECALL","RECENT","RECESS","RECIPE","RECITE","RECKON","RECOIL","RECORD","RECTOR","REDEEM","REDUCE","REFILL","REFINE","REFLEX","REFORM","REFUGE","REFUND","REFUSE","REFUTE","REGAIN","REGARD","REGENT","REGIME","REGION","REGRET","REJECT","REJOIN","RELATE","RELIEF","RELISH","RELIVE","RELOAD","REMAIN","REMAKE","REMARK","REMEDY","REMIND","REMOTE","REMOVE","RENAME","RENDER","RENTAL","RENTED","REOPEN","REPAIR","REPEAL","REPEAT","REPENT","REPLAY","REPORT","REPOST","RESALE","RESCUE","RESENT","RESIDE","RESIGN","RESIST","RESORT","RESULT","RESUME","RETAIL","RETAIN","RETAKE","RETINA","RETIRE","RETURN","REVAMP","REVEAL","REVERT","REVIEW","REVISE","REVIVE","REVOKE","REVOLT","REWARD","REWIND","RHYTHM","RIBBON","RICHES","RICHLY","RIDDEN","RIDDLE","RIDING","RIPPER","RIPPLE","RISING","RITUAL","ROBBER","ROBUST","ROCKER","ROCKET","RODENT","ROLLED","ROLLER","ROOKIE","ROOTED","ROSARY","ROSTER","ROTARY","ROTATE","ROTTEN","ROUTER","ROWING","ROYALE","RUBBED","RUBBER","RUBBLE","RUDDER","RUGGED","RUINED","RULING","RUMBLE","RUNNER","RUNOFF","RUNWAY","RUSHED","RUSTIC","SACKED","SACRED","SADDLE","SAFARI","SAFELY","SAFETY","SAILED","SAILOR","SALARY","SALINE","SALIVA","SALMON","SALOON","SALTED","SALUTE","SAMPLE","SANITY","SATIRE","SAVAGE","SAVING","SAVIOR","SAYING","SCALED","SCALES","SCARCE","SCENIC","SCHEMA","SCHEME","SCHOOL","SCORED","SCORER","SCOTCH","SCRAPE","SCREAM","SCREEN","SCRIPT","SCROLL","SEALED","SEARCH","SEASON","SEATED","SECOND","SECRET","SECTOR","SECURE","SEEDED","SEEING","SEEKER","SELDOM","SELECT","SELLER","SENATE","SENDER","SENIOR","SENSED","SENSOR","SEPTIC","SEQUEL","SERENE","SERIAL","SERIES","SERMON","SERVER","SESAME","SETTLE","SEVERE","SEWAGE","SEWING","SHABBY","SHADED","SHADOW","SHAGGY","SHAKEN","SHAKER","SHAMAN","SHAMED","SHAPED","SHAVED","SHEATH","SHELLY","SHERRY","SHIELD","SHORTS","SHOULD","SHOVEL","SHOWER","SHRIMP","SHRINE","SHRINK","SHROUD","SHRUNK","SICKLE","SIDING","SIGNAL","SILENT","SILICA","SILVER","SIMMER","SIMPLE","SIMPLY","SINFUL","SINGER","SINGLE","SINNER","SISTER","SITTER","SIZING","SKATER","SKETCH","SKEWED","SKIING","SKINNY","SLATER","SLAYER","SLEEPY","SLEEVE","SLICED","SLIDER","SLIGHT","SLOGAN","SLOPPY","SLOWLY","SLUDGE","SMELLY","SMOKED","SMOKER","SMOOTH","SNAILS","SNEAKY","SNEEZE","SOAKED","SOCCER","SOCIAL","SOCKET","SODIUM","SOFTEN","SOFTLY","SOLACE","SOLELY","SOLEMN","SONATA","SOONER","SOOTHE","SORELY","SORROW","SORTED","SOUGHT","SOURCE","SOVIET","SPACED","SPARKS","SPARSE","SPEECH","SPEEDY","SPHERE","SPIDER","SPIKED","SPINAL","SPIRAL","SPIRIT","SPLASH","SPLEEN","SPOKEN","SPONGE","SPOOKY","SPORTS","SPOUSE","SPRANG","SPREAD","SPRING","SPRINT","SPRITE","SPRUCE","SPRUNG","SQUARE","SQUASH","SQUIRE","STABLE","STAGED","STANCE","STAPLE","STARCH","STARRY","STARVE","STATED","STATIC","STATUE","STATUS","STAYED","STEADY","STEREO","STICKS","STICKY","STIGMA","STITCH","STOCKS","STOLEN","STONER","STORMY","STRAIN","STRAIT","STRAND","STRATA","STREAK","STREAM","STREET","STRESS","STRICT","STRIDE","STRIFE","STRIKE","STRING","STRIPE","STRIVE","STROLL","STRONG","STRUCK","STRUNG","STUDIO","STURDY","SUBMIT","SUBSET","SUBTLE","SUBTLY","SUBURB","SUBWAY","SUCKER","SUDDEN","SUFFER","SUGARY","SULTAN","SUMMED","SUMMER","SUMMIT","SUMMON","SUNKEN","SUNSET","SUPERB","SUPPER","SUPPLY","SURELY","SURFER","SURREY","SURVEY","SWAYED","SWEATY","SWITCH","SYMBOL","SYNTAX","SYSTEM","TABLES","TABLET","TACKLE","TACTIC","TAGGED","TAILED","TAILOR","TAKING","TALENT","TALLER","TANDEM","TANKER","TANNED","TANNER","TARGET","TARIFF","TASTED","TATTOO","TAUGHT","TAVERN","TAXING","TEASER","TELLER","TEMPER","TEMPLE","TENANT","TENDER","TENDON","TENNIS","TENURE","TERROR","TESTED","TESTER","THANKS","THEIRS","THEORY","THERES","THESES","THESIS","THEYRE","THINGY","THINLY","THIRST","THIRTY","THOUGH","THRASH","THREAD","THREAT","THRICE","THRIFT","THRILL","THRIVE","THROAT","THRONE","THROWN","TICKET","TICKLE","TIGHTS","TIMBER","TIMELY","TIMING","TINDER","TINKER","TINTED","TIPPED","TIRING","TISSUE","TITLED","TOILET","TOMATO","TONGUE","TOPPED","TORQUE","TOUCHY","TOWARD","TOWING","TRACER","TRADER","TRAGIC","TRANCE","TRAUMA","TRAVEL","TREATY","TREBLE","TRENCH","TRIBAL","TRICKY","TRIPLE","TRIPOD","TRIVIA","TROPHY","TROUGH","TROUPE","TRUCKS","TRYING","TUBING","TUCKER","TUMBLE","TUNING","TUNNEL","TURNED","TURNER","TURRET","TURTLE","TWELVE","TWENTY","TWITCH","TYCOON","TYRANT","ULSTER","UMPIRE","UNABLE","UNBORN","UNDEAD","UNDONE","UNEASY","UNEVEN","UNFAIR","UNFOLD","UNIQUE","UNISON","UNITED","UNJUST","UNLESS","UNLIKE","UNLOAD","UNLOCK","UNPAID","UNREAL","UNREST","UNSAFE","UNSEEN","UNSURE","UNTOLD","UNTRUE","UNUSED","UNVEIL","UNWELL","UPBEAT","UPDATE","UPHELD","UPHILL","UPHOLD","UPKEEP","UPLIFT","UPLOAD","UPROAR","UPSIDE","UPTAKE","UPTOWN","UPWARD","URGENT","URGING","USABLE","USEFUL","UTMOST","UTOPIA","VACANT","VACATE","VACUUM","VALLEY","VALUED","VANISH","VANITY","VARIED","VASTLY","VECTOR","VEILED","VELVET","VENDOR","VENEER","VERBAL","VERIFY","VERSED","VERSUS","VERTEX","VESSEL","VIABLE","VICTIM","VICTOR","VIEWER","VIKING","VIOLET","VIOLIN","VIRTUE","VISION","VISUAL","VOICED","VOLLEY","VOLUME","VOODOO","VORTEX","VOTING","VOYAGE","WAFFLE","WAITER","WAIVER","WAKING","WALKER","WALLED","WALLER","WALLET","WALNUT","WANDER","WARDEN","WARMED","WARMER","WARMLY","WARMTH","WARNER","WARPED","WASHED","WASHER","WASTED","WATERY","WAVING","WEAKEN","WEAKLY","WEALTH","WEAPON","WEASEL","WEAVER","WEEKLY","WEIGHT","WHILST","WHISKY","WHITES","WHOLLY","WHOOPS","WICKED","WICKET","WIDELY","WIENER","WIGGLE","WILDER","WILDLY","WILLED","WILLOW","WINDOW","WINERY","WINGED","WINGER","WINNER","WINTER","WIRING","WISDOM","WISELY","WISHED","WITHIN","WIZARD","WONDER","WOODED","WOODEN","WORDED","WORKED","WORKER","WORTHY","WOUNDS","WREATH","WRENCH","WRIGHT","WRITER","YEARLY","YELLOW","YORKER","ZENITH","ZIPPER","ZODIAC","ZOMBIE","ZONING"];
 
 // ── Date helpers ───────────────────────────────────────────────────────────────
 function todayStr() {
@@ -917,7 +974,7 @@ let archiveDate      = null;
 // iOS kills backgrounded PWA pages; without this, a reload between attempts
 // silently restarts the game at attempt 1 with full lives.
 function saveGameState() {
-  if (archiveMode || gameOver) return;
+  if (archiveMode || spicyMode || gameOver) return;
   try {
     localStorage.setItem(LS_STATE, JSON.stringify({
       date: getActivePuzzleDate(), attempt, round, history,
@@ -927,7 +984,7 @@ function saveGameState() {
 }
 
 function saveStateForNextAttempt(nextAttempt) {
-  if (archiveMode) return;
+  if (archiveMode || spicyMode) return;
   try {
     localStorage.setItem(LS_STATE, JSON.stringify({
       date: getActivePuzzleDate(), attempt: nextAttempt, round: 0, history: [],
@@ -995,15 +1052,29 @@ function foundThisAttempt() {
   return new Set(history.flatMap(w => w.split("").filter(c => forbidden.has(c))));
 }
 
+function maxAttempts() { return spicyMode ? SPICY_ATTEMPTS : MAX_ATTEMPTS; }
+
 function render() {
-  // Streak (element absent in archive mode — banner replaces it)
+  // Streak (element absent in archive/spicy mode — banner replaces it)
   const sv = document.getElementById("streak-val");
   if (sv) sv.textContent = getStreak();
+
+  // Spicy: mode toggle in the banner slot — switchable until the first word is played
+  if (spicyMode) {
+    const sb = document.getElementById("streak-box");
+    if (sb) {
+      const locked = spicyToggleLocked();
+      const opt = (val, label) =>
+        `<button class="st-opt${spicyEasy === val ? " active" : ""}"${locked ? "" : ` onclick="setSpicyEasy(${val})"`}>${label}</button>`;
+      sb.innerHTML = `<span class="spicy-toggle${locked ? " locked" : ""}">${opt(false, "NORMAL")}${opt(true, "EASY")}</span>`
+        + (locked ? `<span class="st-locked-note">LOCKED</span>` : "");
+    }
+  }
 
   // Attempts hearts
   const ad = document.getElementById("attempts-display");
   ad.innerHTML = "";
-  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+  for (let i = 0; i < maxAttempts(); i++) {
     const s = document.createElement("span");
     s.textContent = failedAttempts[i] !== undefined ? "💔" : "♥";
     s.style.opacity = failedAttempts[i] !== undefined ? "0.3" : (i < attempt || gameOver ? "1" : "0.25");
@@ -1057,11 +1128,56 @@ function render() {
   ir.innerHTML = "";
   ir.style.display = gameOver ? "none" : "flex";
   const targetLen = ROUND_LENGTHS[round];
+  // Spicy final round: light up the slots that hold letters uncovered this attempt (both modes).
+  const skel = (spicyMode && round === 3) ? foundThisAttempt() : null;
   for (let i = 0; i < targetLen; i++) {
     const t = document.createElement("div");
-    t.className = "tile input-tile" + (currentInput[i] ? " filled" : "");
+    t.className = "tile input-tile"
+      + (currentInput[i] ? " filled" : "")
+      + (skel && skel.has(WORD[i]) ? " skel" : "");
     t.textContent = currentInput[i] || "";
     ir.appendChild(t);
+  }
+
+  // Spicy reveal panels + under-tile caption
+  const skelReveal = document.getElementById("spicy-skel");
+  const sc = document.getElementById("spicy-caption");
+  if (spicyMode && spicySkelReveal && !gameOver) {
+    // Attempt died on forbidden-letter hits before the final round — reveal the
+    // 6-letter skeleton so the player sees where the letters they found sit.
+    ir.style.display = "none";
+    const f = foundThisAttempt();
+    skelReveal.innerHTML = "";
+    for (let i = 0; i < 6; i++) {
+      const isFound = f.has(WORD[i]);
+      const t = document.createElement("div");
+      if (isFound && spicyEasy) {
+        // Easy mode: show the actual letter in its place for the countdown.
+        t.className = "tile pos";
+        t.textContent = WORD[i];
+      } else {
+        // Normal mode: positions only, no letters.
+        t.className = "tile" + (isFound ? " skel" : "");
+      }
+      skelReveal.appendChild(t);
+    }
+    skelReveal.style.display = "flex";
+    if (sc) {
+      sc.textContent = spicyEasy
+        ? "The letters you found — in place. Memorise them!"
+        : "Where the letters you found sit. Remember it!";
+      sc.style.display = "block";
+    }
+  } else {
+    if (skelReveal) skelReveal.style.display = "none";
+    if (sc) {
+      if (spicyMode && round === 3 && !gameOver) {
+        sc.textContent = "Green = slots filled by letters you've found. Which goes where? That's the puzzle.";
+        sc.style.display = "block";
+      } else {
+        sc.style.display = "none";
+      }
+    }
   }
 
   // Keyboard
@@ -1089,17 +1205,23 @@ function render() {
   });
 
   // Word history panel — filtered to current round's word length
-  // Hidden in the final round, when game is over, or in archive mode (no 7-day ban there)
+  // Hidden in the final round, when game is over, or in archive mode (no 7-day ban there).
+  // Spicy shows it too, but listing only THIS game's already-played words (no 7-day ban).
   document.getElementById("word-history-box").style.display = (round === 3 || gameOver || archiveMode) ? "none" : "";
 
-  const wh = getWordHistory();
+  const wh = (archiveMode || spicyMode) ? [] : getWordHistory();
   const prevAttemptWords = failedAttempts.flatMap(a => a);
   const allBanned = [...new Set([...wh.map(e => e.word.toUpperCase()), ...prevAttemptWords])];
   const currentLen = ROUND_LENGTHS[Math.min(round, 2)]; // cap at 5-letter round for display
   const whList = document.getElementById("wh-words-list");
   const document_wh_label = document.querySelector("#word-history-box .wh-label");
-  if (document_wh_label) document_wh_label.textContent = `${currentLen}-LETTER WORDS USED (LAST 7 DAYS)`;
-  const filtered = allBanned.filter(w => w.length === currentLen);
+  if (document_wh_label) document_wh_label.textContent = spicyMode
+    ? `WORDS PLAYED THIS GAME — CAN'T REPLAY`
+    : `${currentLen}-LETTER WORDS USED (LAST 7 DAYS)`;
+  // Spicy lists every word played this game (any length); daily filters to the current round length.
+  const filtered = spicyMode
+    ? [...new Set([...history, ...prevAttemptWords])]
+    : allBanned.filter(w => w.length === currentLen);
   if (filtered.length > 0) {
     whList.innerHTML = filtered.map(w => `<span class="wh-word">${w}</span>`).join("");
   } else {
@@ -1395,13 +1517,29 @@ async function doSubmit() {
   }
 
   // Check 7-day word ban (daily only) + words used in previous attempts this game
-  const wordHistory = archiveMode ? [] : getWordHistory();
+  const wordHistory = (archiveMode || spicyMode) ? [] : getWordHistory();
   const recentWords = new Set(wordHistory.map(e => e.word.toUpperCase()));
   const previousAttemptWords = new Set(failedAttempts.flatMap(a => a));
   if (round < 3 && (recentWords.has(word) || previousAttemptWords.has(word))) {
     flashMessage(`${word} already used — try something new`, "error");
     shakeInput();
     return;
+  }
+
+  // Spicy final round: the guess must respect the green skeleton —
+  // found letters must sit in the green slots, and nowhere else. (The real
+  // answer always satisfies this, so a correct guess is never blocked.)
+  if (spicyMode && round === 3) {
+    const found = foundThisAttempt();
+    for (let i = 0; i < word.length; i++) {
+      if (found.has(WORD[i]) !== found.has(word[i])) {
+        flashMessage("Found letters go in the green slots", "error");
+        shakeInput();
+        currentInput = ""; // clear the guess; render keeps the green skeleton outlines
+        render();
+        return;
+      }
+    }
   }
 
   // Dictionary check (all rounds including the final guess)
@@ -1412,6 +1550,7 @@ async function doSubmit() {
     if (!valid) {
       flashMessage(`${word} — not a valid word`, "error");
       shakeInput();
+      if (spicyMode) { currentInput = ""; render(); } // clear the tiles (skeleton outlines stay)
       return;
     }
   }
@@ -1423,14 +1562,17 @@ async function doSubmit() {
       failedR4.push(word);
       failedAttempts.push([...history]);
       render(); // show tiles before countdown
-      if (nextAttempt > MAX_ATTEMPTS) {
+      // Spicy easy mode: flash which letters of the wrong guess are in the right place
+      const easyHint = spicyMode && spicyEasy;
+      if (easyHint) showSpicyHint(word);
+      if (nextAttempt > maxAttempts()) {
         gameOver = true;
-        if (!archiveMode) {
+        if (!archiveMode && !spicyMode) {
           updateStreak(false);
           addWordsToHistory(failedAttempts.flat());
           clearGameState();
         }
-        setTimeout(() => showEnd(false), 1500);
+        setTimeout(() => showEnd(false), easyHint ? 4000 : 1500);
         return;
       }
       saveStateForNextAttempt(nextAttempt);
@@ -1439,7 +1581,7 @@ async function doSubmit() {
     }
     // WIN
     gameOver = true;
-    if (!archiveMode) {
+    if (!archiveMode && !spicyMode) {
       addWordsToHistory([...failedAttempts.flat(), ...history]);
       updateStreak(true);
       clearGameState();
@@ -1459,10 +1601,11 @@ async function doSubmit() {
     const nextAttempt = attempt + 1;
     failedR4.push(null);
     failedAttempts.push([...history]);
+    if (spicyMode) spicySkelReveal = true; // reveal the 6-letter skeleton on this death
     render(); // show the hitting word with red tiles first
-    if (nextAttempt > MAX_ATTEMPTS) {
+    if (nextAttempt > maxAttempts()) {
       gameOver = true;
-      if (!archiveMode) {
+      if (!archiveMode && !spicyMode) {
         updateStreak(false);
         addWordsToHistory(failedAttempts.flat());
         clearGameState();
@@ -1491,8 +1634,13 @@ function startCountdown(callback) {
   const el = document.getElementById("countdown-msg");
   el.style.display = "block";
   let secs = 5;
+  const msg = spicyMode
+    ? (spicyEasy
+        ? "🌶️ Green = right spot — burn it into memory!"
+        : "🌶️ Wrong! Remember the letters that belong to the word.")
+    : "💥 Attempt lost — remember the forbidden letters you hit!";
   function tick() {
-    el.innerHTML = `💥 Attempt lost — remember the forbidden letters you hit!<span class="countdown-num">${secs}</span>`;
+    el.innerHTML = `${msg}<span class="countdown-num">${secs}</span>`;
     if (secs === 0) {
       el.style.display = "none";
       countdownActive = false;
@@ -1511,6 +1659,7 @@ function resetAttempt(nextAttempt) {
   history = [];
   hitsThisAttempt = 0;
   currentInput = "";
+  spicySkelReveal = false; // clear the death-skeleton reveal for the new attempt
   render();
 }
 
@@ -1536,6 +1685,12 @@ function updateStreak(won) {
 
 // ── End screen ─────────────────────────────────────────────────────────────────
 function showEnd(won) {
+  if (spicyMode) { showSpicyEnd(won); return; }
+  // Daily/archive end screen restores its own furniture (spicy may have hidden it)
+  document.getElementById("spicy-end-row").style.display = "none";
+  document.getElementById("end-bottom-row").style.display = "flex";
+  const esb = document.getElementById("end-spicy-btn");
+  if (esb) esb.style.display = "";
   // Perfect game: solved on the first attempt without a single forbidden letter.
   // Daily perfect = Golden Gazpacho badge; archive perfect = gold tick on the calendar.
   const perfect = won && attempt === 1 && hitsThisAttempt === 0;
@@ -1594,6 +1749,108 @@ function showEnd(won) {
 function formatArchiveDate(ds) {
   const d = new Date(ds + "T12:00:00Z");
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+}
+
+// ── Spicy Gazpacho ───────────────────────────────────────────────────────────
+function getSpicyUsed() {
+  try { return JSON.parse(localStorage.getItem(LS_SPICY_USED) || "[]"); } catch { return []; }
+}
+function addSpicyUsed(w) {
+  const u = getSpicyUsed();
+  if (!u.includes(w)) { u.push(w); try { localStorage.setItem(LS_SPICY_USED, JSON.stringify(u)); } catch {} }
+}
+function pickSpicyWord() {
+  const used = new Set(getSpicyUsed());
+  let pool = SPICY_WORDS.filter(w => !used.has(w));
+  if (pool.length === 0) { // whole bank played — reset the never-repeat memory and start over
+    try { localStorage.removeItem(LS_SPICY_USED); } catch {}
+    pool = SPICY_WORDS.slice();
+  }
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// The mode toggle lives on the play screen; it locks once the first word is played.
+function spicyToggleLocked() {
+  return !(round === 0 && history.length === 0 && failedAttempts.length === 0);
+}
+function setSpicyEasy(easy) {
+  if (spicyMode && spicyToggleLocked()) return; // can't switch mid-game
+  spicyEasy = easy;
+  try { localStorage.setItem(LS_SPICY_EASY, easy ? "1" : "0"); } catch {}
+  if (spicyMode) render();
+}
+
+function launchSpicy() {
+  spicyMode = true; archiveMode = false;
+  spicyEasy = localStorage.getItem(LS_SPICY_EASY) === "1"; // last choice; changeable until first word
+  spicySkelReveal = false;
+  WORD = pickSpicyWord();
+  addSpicyUsed(WORD); // mark immediately so it never repeats, even if abandoned
+  forbidden = new Set(WORD.split(""));
+  attempt = 1; round = 0; history = []; hitsThisAttempt = 0;
+  failedAttempts = []; failedR4 = []; currentInput = ""; gameOver = false;
+  submitting = false; countdownActive = false;
+
+  document.getElementById("archive-cal").classList.remove("visible");
+  document.getElementById("already-played").classList.remove("visible");
+  document.getElementById("app").style.display = "";
+  document.getElementById("app").style.paddingBottom = "";
+  document.getElementById("end-box").className = "";
+  document.getElementById("end-golden").className = "golden-badge";
+  document.getElementById("spicy-end-row").style.display = "none";
+  document.getElementById("keyboard").style.display = "block";
+  const qb = document.getElementById("quit-btn");
+  qb.style.display = "flex";
+  qb.textContent = "QUIT";
+  qb.classList.add("spicy-quit");
+  qb.setAttribute("aria-label", "Quit Spicy");
+  // Title becomes SPICY GAZPACHO for the duration
+  const ttl = document.getElementById("title");
+  ttl.textContent = "🌶️ SPICY GAZPACHO";
+  ttl.classList.add("spicy-title");
+  // Repurpose the clue slot: no clue, so it carries the Spicy tagline instead.
+  document.getElementById("clue-box").style.display = "";
+  document.getElementById("clue-label").textContent = "🌶️ S P I C Y";
+  document.getElementById("clue-text").textContent =
+    "No clue, just brain ache. A random word, one extra life — and easy mode, if you must.";
+  render(); // builds the in-game mode toggle into the banner slot
+}
+
+// Easy mode: light up the word the player just typed — green where it's in the right place.
+// Colours the input tiles in place (render() has just drawn them with the guess still showing),
+// so it's visible right where the player is looking, not in an off-screen row.
+function showSpicyHint(guess) {
+  const tiles = document.querySelectorAll("#input-row .tile");
+  tiles.forEach((t, i) => { if (WORD[i] === guess[i]) t.classList.add("pos"); });
+}
+
+function showSpicyEnd(won, gaveUp) {
+  const eb = document.getElementById("end-box");
+  eb.className = "visible" + (won ? "" : " lost");
+  document.getElementById("end-emoji").textContent = won ? "🌶️" : (gaveUp ? "🏳️" : "💀");
+  document.getElementById("end-title").textContent = won ? "Solved it!" : (gaveUp ? "Gave up" : "Out of attempts");
+  document.getElementById("end-word").textContent = WORD;
+  document.getElementById("end-sub").textContent = won
+    ? "No clue. Pure brain ache. Respect."
+    : `The word was ${WORD}`;
+  // Hide every daily/archive end fitting
+  document.getElementById("end-golden").className = "golden-badge";
+  document.getElementById("end-grid").innerHTML = "";
+  document.getElementById("end-perfect").style.display = "none";
+  document.getElementById("end-reveal-confirm").style.display = "none";
+  document.getElementById("end-reveal-btn").style.display = "none";
+  document.getElementById("end-share-btn").style.display = "none";
+  document.getElementById("next-puzzle-countdown").style.display = "none";
+  document.getElementById("end-bottom-row").style.display = "none";
+  const esb = document.getElementById("end-spicy-btn");
+  if (esb) esb.style.display = "none";
+  // Spicy controls: another word, or home. On give-up, just show the solution and Home.
+  document.getElementById("spicy-end-row").style.display = "flex";
+  const nw = document.getElementById("spicy-newword-btn");
+  if (nw) nw.style.display = gaveUp ? "none" : "";
+  document.getElementById("word-history-box").style.display = "none";
+  document.getElementById("app").style.paddingBottom = "16px";
+  render();
 }
 
 // ── Next puzzle countdown ──────────────────────────────────────────────────────
@@ -1778,7 +2035,15 @@ function dismissSplash() {
   try { localStorage.setItem("gazpacho_seen", "1"); } catch {}
 }
 
+const SPICY_MODAL_HTML = `
+    <div id="modal-title">🌶️ SPICY GAZPACHO</div>
+    <div id="modal-rules">No clue, just brain ache. A random word, one extra life — and easy mode, if you must.</div>
+    <button id="modal-close" onclick="hideModal()">G O T &nbsp; I T</button>`;
+let _dailyModalHTML = null;
 function showModal() {
+  const inner = document.getElementById("modal-inner");
+  if (_dailyModalHTML === null) _dailyModalHTML = inner.innerHTML;
+  inner.innerHTML = spicyMode ? SPICY_MODAL_HTML : _dailyModalHTML;
   document.getElementById("modal").classList.add("visible");
 }
 
@@ -1821,8 +2086,16 @@ function showCalendar() {
 }
 
 function quitArchive() {
+  // Spicy: the ✕ gives up the current word — reveal it, then offer New word / Home.
+  if (spicyMode) { giveUpSpicy(); return; }
   // Abandon the archive game (nothing recorded) and return to the calendar
   showCalendar();
+}
+
+function giveUpSpicy() {
+  if (gameOver) { window.location.reload(); return; } // already ended → ✕ = home
+  gameOver = true;
+  showSpicyEnd(false, true);
 }
 
 function calStep(dir) {
