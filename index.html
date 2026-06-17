@@ -1182,7 +1182,10 @@ function render() {
 
   // Keyboard
   const kb = document.getElementById("keyboard");
-  kb.style.display = gameOver ? "none" : "block";
+  // Hide it while the between-attempt skeleton/green-dash reveal is on screen (the 5s
+  // countdown); resetAttempt clears spicySkelReveal so it returns for the next attempt.
+  const skelRevealActive = spicyMode && spicySkelReveal && !gameOver;
+  kb.style.display = (gameOver || skelRevealActive) ? "none" : "block";
   const usedLetters = getUsedLetters();
   const found = foundThisAttempt();
   const available = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(c => {
