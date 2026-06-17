@@ -404,7 +404,9 @@
     100% { transform: translateY(155px) rotate(45deg); opacity: 0; }
   }
   #ap-streak { font-size: 18px; color: #e2e8f0; }
-  #ap-label { font-size: 11px; letter-spacing: 4px; color: #94a3b8; margin-top: 20px; }
+  /* Resting-screen golden badge: single line, sized to fill the pill and centre with the icon */
+  #ap-golden span { font-size: 16px; line-height: 1.1; text-align: center; }
+  #ap-label { font-size: 11px; letter-spacing: 4px; color: #94a3b8; margin-top: 6px; }
   #ap-time { font-size: 18px; letter-spacing: 6px; color: #cbd5e1; }
   #ap-countdown { font-size: 38px; font-weight: bold; color: #facc15; letter-spacing: 4px; font-variant-numeric: tabular-nums; margin-top: 4px; }
   #ap-refresh { background: none; border: 1px solid #64748b; border-radius: 8px; color: #cbd5e1; font-family: Georgia, serif; font-size: 11px; letter-spacing: 3px; padding: 12px 28px; cursor: pointer; margin-top: 20px; }
@@ -810,7 +812,7 @@
       <ellipse cx="100" cy="74" rx="30" ry="7" fill="#d97706"/>
       <ellipse cx="100" cy="74" rx="14" ry="4" fill="#fbbf24"/>
     </svg>
-    <span>GOLDEN GAZPACHO<br>first attempt — no forbidden letters</span>
+    <span>GOLDEN GAZPACHO!</span>
   </div>
   <div id="ap-grid" style="margin:4px 0;display:flex;flex-direction:column;gap:4px;align-items:center;"></div>
   <button onclick="shareResult(this)" style="background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:10px 24px;font-size:12px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;">S H A R E &nbsp; R E S U L T</button>
