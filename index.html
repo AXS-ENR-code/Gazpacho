@@ -265,6 +265,14 @@
     display: block;
     margin-top: 4px;
   }
+  #countdown-msg .fail-headline {
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ef4444;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
+  }
   #message {
     border-radius: 8px;
     padding: 8px 16px;
@@ -967,6 +975,7 @@ let gameOver         = false;
 let messageTimer     = null;
 let submitting       = false;  // blocks concurrent submits during async dictionary check
 let countdownActive  = false;  // blocks input during the between-attempts countdown
+let failPaused       = false;  // attempt-fail pause on screen (FAIL banner / skeleton) — hide keyboard + input, all modes
 let archiveMode      = false;  // playing a past puzzle from the archive
 let archiveDate      = null;
 
@@ -1126,7 +1135,7 @@ function render() {
   // Input tiles
   const ir = document.getElementById("input-row");
   ir.innerHTML = "";
-  ir.style.display = gameOver ? "none" : "flex";
+  ir.style.display = (gameOver || failPaused) ? "none" : "flex";
   const targetLen = ROUND_LENGTHS[round];
   // Spicy final round: light up the slots that hold letters uncovered this attempt (both modes).
   const skel = (spicyMode && round === 3) ? foundThisAttempt() : null;
@@ -1185,7 +1194,7 @@ function render() {
   // Hide it while the between-attempt skeleton/green-dash reveal is on screen (the 5s
   // countdown); resetAttempt clears spicySkelReveal so it returns for the next attempt.
   const skelRevealActive = spicyMode && spicySkelReveal && !gameOver;
-  kb.style.display = (gameOver || skelRevealActive) ? "none" : "block";
+  kb.style.display = (gameOver || failPaused || skelRevealActive) ? "none" : "block";
   const usedLetters = getUsedLetters();
   const found = foundThisAttempt();
   const available = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(c => {
@@ -1607,10 +1616,8 @@ async function doSubmit() {
     failedR4.push(null);
     failedAttempts.push([...history]);
     const finalDeath = nextAttempt > maxAttempts();
-    // The skeleton ("remember where the letters sit") only helps if a retry follows.
-    // On the last attempt there's no retry, so suppress it and go straight to FAIL + word.
-    if (spicyMode && !finalDeath) spicySkelReveal = true;
-    if (spicyMode && finalDeath) gameOver = true; // render() now skips the skeleton/caption
+    // On the last attempt there's no retry — go straight to the end screen with the word.
+    if (spicyMode && finalDeath) gameOver = true; // render() then skips the skeleton/caption
     render(); // show the hitting word with red tiles first
     if (finalDeath) {
       gameOver = true;
@@ -1623,7 +1630,7 @@ async function doSubmit() {
       return;
     }
     saveStateForNextAttempt(nextAttempt);
-    startCountdown(() => resetAttempt(nextAttempt));
+    failAttempt(nextAttempt); // FAIL banner → (Spicy) skeleton → 5s countdown → next attempt
     return;
   }
 
@@ -1636,6 +1643,23 @@ async function doSubmit() {
   round++;
   saveGameState();
   render();
+}
+
+// Attempt failed (too many forbidden letters) with a retry to come. Two beats, so the player
+// can process what happened: (1) a brief "FAIL!" banner with the keyboard hidden; (2) the 5s
+// countdown — in Spicy the position skeleton is revealed for this beat. All modes hide the
+// keyboard + input row throughout. resetAttempt() clears failPaused / spicySkelReveal.
+function failAttempt(nextAttempt) {
+  failPaused = true;
+  countdownActive = true; // lock input across both beats
+  render();               // hide keyboard + input row; board keeps the red-tile word
+  const el = document.getElementById("countdown-msg");
+  el.style.display = "block";
+  el.innerHTML = '<span class="fail-headline">FAIL!</span>You\'ve used too many forbidden letters';
+  setTimeout(() => {
+    if (spicyMode) { spicySkelReveal = true; render(); } // skeleton appears for beat 2
+    startCountdown(() => resetAttempt(nextAttempt));      // replaces the banner with the 5s countdown
+  }, 1600);
 }
 
 function startCountdown(callback) {
@@ -1669,6 +1693,7 @@ function resetAttempt(nextAttempt) {
   hitsThisAttempt = 0;
   currentInput = "";
   spicySkelReveal = false; // clear the death-skeleton reveal for the new attempt
+  failPaused = false;      // end the fail pause — keyboard + input return
   render();
 }
 
@@ -1798,7 +1823,7 @@ function launchSpicy() {
   forbidden = new Set(WORD.split(""));
   attempt = 1; round = 0; history = []; hitsThisAttempt = 0;
   failedAttempts = []; failedR4 = []; currentInput = ""; gameOver = false;
-  submitting = false; countdownActive = false;
+  submitting = false; countdownActive = false; failPaused = false;
 
   document.getElementById("archive-cal").classList.remove("visible");
   document.getElementById("already-played").classList.remove("visible");
@@ -2178,7 +2203,7 @@ function startArchiveGame(date) {
   forbidden = new Set(WORD.split(""));
   attempt = 1; round = 0; history = []; hitsThisAttempt = 0;
   failedAttempts = []; failedR4 = []; currentInput = ""; gameOver = false;
-  submitting = false; countdownActive = false;
+  submitting = false; countdownActive = false; failPaused = false;
 
   document.getElementById("archive-cal").classList.remove("visible");
   document.getElementById("already-played").classList.remove("visible");
