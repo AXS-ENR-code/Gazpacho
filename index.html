@@ -1545,8 +1545,10 @@ async function doSubmit() {
     }
   }
 
-  // Dictionary check (all rounds including the final guess)
-  if (round <= 3) {
+  // Dictionary check (all rounds including the final guess).
+  // The secret word is valid by definition — skip the (possibly networked) lookup when the
+  // guess IS the answer, so a correct final guess wins instantly instead of waiting on the API.
+  if (round <= 3 && word !== WORD) {
     flashMessage("Checking…", "ok", 3000);
     const valid = await isValidWord(word);
     clearMessage();
