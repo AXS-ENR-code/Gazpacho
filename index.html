@@ -719,10 +719,10 @@
     <div id="next-puzzle-countdown" style="font-size:16px;font-weight:bold;color:#facc15;letter-spacing:3px;margin-top:4px;font-family:Georgia,serif;"></div>
     <button id="end-share-btn" onclick="shareResult(this)" style="margin-top:14px;background:#facc15;color:#0f172a;border:none;border-radius:8px;padding:12px 28px;font-size:13px;font-weight:bold;letter-spacing:3px;font-family:Georgia,serif;cursor:pointer;width:100%;">S H A R E &nbsp; R E S U L T</button>
     <div id="end-bottom-row" style="display:flex;gap:8px;width:100%;margin-top:8px;">
-      <button id="end-archive-btn" class="archive-btn" onclick="openArchive()" style="flex:1;margin-top:0;padding:10px 12px;">PLAY THE ARCHIVE</button>
-      <button id="end-refresh-btn" onclick="window.location.reload()" style="flex:1;background:none;border:1px solid #334155;border-radius:8px;color:#475569;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 12px;cursor:pointer;">R E F R E S H</button>
+      <button id="end-refresh-btn" onclick="window.location.reload()" style="flex:1;background:none;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-family:Georgia,serif;font-size:11px;letter-spacing:2px;padding:10px 6px;cursor:pointer;">HOME</button>
+      <button id="end-archive-btn" class="archive-btn" onclick="openArchive()" style="flex:1;margin-top:0;padding:10px 6px;letter-spacing:2px;">ARCHIVE</button>
+      <button id="end-spicy-btn" class="spicy-btn" onclick="launchSpicy()" style="flex:1;margin-top:0;padding:10px 6px;letter-spacing:2px;">🌶️ SPICY</button>
     </div>
-    <button id="end-spicy-btn" class="spicy-btn" onclick="launchSpicy()" style="width:100%;margin-top:8px;">🌶️ PLAY SPICY</button>
     <div id="spicy-end-row" style="display:none;gap:8px;width:100%;margin-top:8px;">
       <button id="spicy-newword-btn" class="spicy-newword" onclick="launchSpicy()">NEW WORD</button>
       <button onclick="window.location.reload()" style="flex:1;background:none;border:1px solid #334155;border-radius:8px;color:#94a3b8;font-family:Georgia,serif;font-size:11px;letter-spacing:3px;padding:10px 12px;cursor:pointer;">H O M E</button>
@@ -1601,9 +1601,13 @@ async function doSubmit() {
     const nextAttempt = attempt + 1;
     failedR4.push(null);
     failedAttempts.push([...history]);
-    if (spicyMode) spicySkelReveal = true; // reveal the 6-letter skeleton on this death
+    const finalDeath = nextAttempt > maxAttempts();
+    // The skeleton ("remember where the letters sit") only helps if a retry follows.
+    // On the last attempt there's no retry, so suppress it and go straight to FAIL + word.
+    if (spicyMode && !finalDeath) spicySkelReveal = true;
+    if (spicyMode && finalDeath) gameOver = true; // render() now skips the skeleton/caption
     render(); // show the hitting word with red tiles first
-    if (nextAttempt > maxAttempts()) {
+    if (finalDeath) {
       gameOver = true;
       if (!archiveMode && !spicyMode) {
         updateStreak(false);
@@ -1729,7 +1733,7 @@ function showEnd(won) {
   document.getElementById("end-refresh-btn").style.display = archiveMode ? "none" : "";
   document.getElementById("next-puzzle-countdown").style.display = archiveMode ? "none" : "";
   const ab = document.getElementById("end-archive-btn");
-  ab.textContent = archiveMode ? "BACK TO THE ARCHIVE" : "PLAY THE ARCHIVE";
+  ab.textContent = archiveMode ? "← ARCHIVE" : "ARCHIVE";
 
   // Reset the perfect-line reveal UI for this game
   document.getElementById("end-perfect").style.display = "none";
